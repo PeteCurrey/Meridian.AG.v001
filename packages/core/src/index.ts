@@ -5,3 +5,4 @@ export * from "./result.ts";
 export * from "./entity.ts";
 export * from "./metrics.ts";
 export * from "./signal.ts";
+export * from "./automation.ts";
