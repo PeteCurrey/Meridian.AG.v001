@@ -8,59 +8,54 @@ import { DeltaDetector } from "./detectors/delta.ts";
 import { DisagreementDetector } from "./detectors/disagreement.ts";
 import { AnomalyDetector } from "./detectors/anomaly.ts";
 import { AbsenceDetector } from "./detectors/absence.ts";
-import { SalienceEngine, BookContext } from "./salience.ts";
-import type { Signal, Observation } from "../../core/src/index.ts";
+import { SalienceEngine } from "./salience.ts";
+import type { BookContext } from "./salience.ts";
+import type { Observation, Signal } from "../../core/src/index.ts";
 
-export class SignalEngine {
+export class EdgeEngine {
   private readonly deltaDetector = new DeltaDetector();
   private readonly disagreementDetector = new DisagreementDetector();
   private readonly anomalyDetector = new AnomalyDetector();
   private readonly absenceDetector = new AbsenceDetector();
   private readonly salienceEngine = new SalienceEngine();
 
-  public processObservations(
-    observations: readonly Observation[],
-    previousObservations: Map<string, Observation>,
+  public evaluateObservations(
+    currentObsList: readonly Observation[],
+    historicalObsMap: Map<string, readonly Observation[]>,
     bookContext: BookContext
-  ): Signal[] {
-    const signals: Signal[] = [];
+  ): readonly Signal[] {
+    const rawSignals: Signal[] = [];
 
-    for (const obs of observations) {
-      // 1. Delta Detection
-      const prev = previousObservations.get(`${obs.source_id}:${obs.metric_key}`) || null;
-      const deltaSig = this.deltaDetector.detect(obs, prev);
-      if (deltaSig) {
-        signals.push(this.enrichSignal(deltaSig, bookContext));
-      }
+    // 1. Delta Detection
+    for (const obs of currentObsList) {
+      const history = historicalObsMap.get(obs.metric_key) || [];
+      const deltaSignal = this.deltaDetector.detectDelta(obs, history);
+      if (deltaSignal) rawSignals.push(deltaSignal);
+    }
 
-      // 2. Anomaly Detection (Simulated historical stats)
-      const mean = Number(obs.value) * 0.8;
-      const stddev = Number(obs.value) * 0.05;
-      const anomalySig = this.anomalyDetector.detect(obs, mean, stddev);
-      if (anomalySig) {
-        signals.push(this.enrichSignal(anomalySig, bookContext));
+    // 2. Disagreement Detection (Cross-source)
+    const metricGroups = new Map<string, Observation[]>();
+    for (const obs of currentObsList) {
+      const group = metricGroups.get(obs.metric_key) || [];
+      group.push(obs);
+      metricGroups.set(obs.metric_key, group);
+    }
+
+    for (const [, group] of metricGroups.entries()) {
+      if (group.length >= 2) {
+        const disagreementSignals = this.disagreementDetector.detectDisagreement(group[0], group[1]);
+        rawSignals.push(...disagreementSignals);
       }
     }
 
-    // 3. Disagreement Detection across dual-source observations
-    for (let i = 0; i < observations.length; i++) {
-      for (let j = i + 1; j < observations.length; j++) {
-        const obsA = observations[i]!;
-        const obsB = observations[j]!;
-        if (obsA.metric_key === obsB.metric_key) {
-          const disagSig = this.disagreementDetector.detect(obsA, obsB);
-          if (disagSig) {
-            signals.push(this.enrichSignal(disagSig, bookContext));
-          }
-        }
-      }
+    // 3. Anomaly Detection (> 3-sigma Outlier)
+    for (const obs of currentObsList) {
+      const history = historicalObsMap.get(obs.metric_key) || [];
+      const anomalySignal = this.anomalyDetector.detectAnomaly(obs, history);
+      if (anomalySignal) rawSignals.push(anomalySignal);
     }
 
-    return signals.sort((a, b) => b.salience_score - a.salience_score);
-  }
-
-  private enrichSignal(signal: Signal, context: BookContext): Signal {
-    const score = this.salienceEngine.calculateSalience(signal, context);
-    return { ...signal, salience_score: score };
+    // 4. Salience Ranking
+    return this.salienceEngine.rankSignals(rawSignals, bookContext);
   }
 }

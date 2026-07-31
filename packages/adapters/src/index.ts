@@ -22,6 +22,7 @@ export * from "./sources/opencorporates.ts";
 export * from "./sources/kalshi.ts";
 export * from "./sources/polymarket.ts";
 export * from "./sources/manifold.ts";
+export * from "./wave2.ts";
 
 import type { Adapter } from "./adapter_interface.ts";
 import { FredAdapter } from "./sources/fred.ts";
@@ -46,6 +47,7 @@ import { OpenCorporatesAdapter } from "./sources/opencorporates.ts";
 import { KalshiAdapter } from "./sources/kalshi.ts";
 import { PolymarketAdapter } from "./sources/polymarket.ts";
 import { ManifoldAdapter } from "./sources/manifold.ts";
+import { wave2AdaptersMap } from "./wave2.ts";
 
 export class AdapterFactory {
   private static readonly adaptersMap = new Map<string, Adapter>([
@@ -70,7 +72,10 @@ export class AdapterFactory {
     ["opencorporates", new OpenCorporatesAdapter()],
     ["kalshi", new KalshiAdapter()],
     ["polymarket", new PolymarketAdapter()],
-    ["manifold", new ManifoldAdapter()]
+    ["manifold", new ManifoldAdapter()],
+
+    // Wave 2 Adapters
+    ...Array.from(wave2AdaptersMap.entries())
   ]);
 
   public static getAdapter(sourceId: string): Adapter | undefined {
