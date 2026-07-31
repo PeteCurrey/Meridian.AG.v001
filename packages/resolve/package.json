@@ -1,0 +1,10 @@
+{
+  "name": "@meridian/resolve",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": { "build": "tsc -b", "test": "node --test" },
+  "dependencies": { "@meridian/core": "workspace:*" },
+  "devDependencies": { "typescript": "^5.7.0" }
+}
