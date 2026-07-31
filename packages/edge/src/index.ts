@@ -29,7 +29,8 @@ export class EdgeEngine {
     // 1. Delta Detection
     for (const obs of currentObsList) {
       const history = historicalObsMap.get(obs.metric_key) || [];
-      const deltaSignal = this.deltaDetector.detectDelta(obs, history);
+      const prev = history.length > 0 ? history[history.length - 1] : null;
+      const deltaSignal = this.deltaDetector.detect(obs, prev || null);
       if (deltaSignal) rawSignals.push(deltaSignal);
     }
 
@@ -43,15 +44,15 @@ export class EdgeEngine {
 
     for (const [, group] of metricGroups.entries()) {
       if (group.length >= 2) {
-        const disagreementSignals = this.disagreementDetector.detectDisagreement(group[0], group[1]);
-        rawSignals.push(...disagreementSignals);
+        const disagreementSignal = this.disagreementDetector.detect(group[0], group[1]);
+        if (disagreementSignal) rawSignals.push(disagreementSignal);
       }
     }
 
     // 3. Anomaly Detection (> 3-sigma Outlier)
     for (const obs of currentObsList) {
       const history = historicalObsMap.get(obs.metric_key) || [];
-      const anomalySignal = this.anomalyDetector.detectAnomaly(obs, history);
+      const anomalySignal = this.anomalyDetector.detect(obs, history);
       if (anomalySignal) rawSignals.push(anomalySignal);
     }
 

@@ -3,10 +3,12 @@ import type { Signal } from "../../core/src/index.ts";
 
 export interface BookContext {
   readonly watchlist_entity_ids: readonly string[];
-  readonly open_position_symbols: readonly string[];
+  readonly open_position_symbols?: readonly string[];
   readonly thesis_entity_ids: readonly string[];
-  readonly thesis_falsification_keywords: readonly string[];
-  readonly standing_question_keywords: readonly string[];
+  readonly thesis_falsification_keywords?: readonly string[];
+  readonly standing_question_keywords?: readonly string[];
+  readonly position_entity_ids?: readonly string[];
+  readonly question_category_keys?: readonly string[];
 }
 
 export class SalienceEngine {
@@ -17,8 +19,10 @@ export class SalienceEngine {
       score += 30;
     }
 
-    const isPosition = context.open_position_symbols.some(sym =>
-      signal.canonical_metric_key.toUpperCase().includes(sym.toUpperCase())
+    const openPositions = context.open_position_symbols || context.position_entity_ids || [];
+    const isPosition = openPositions.some(sym =>
+      signal.canonical_metric_key.toUpperCase().includes(sym.toUpperCase()) ||
+      (signal.linked_entity_id && sym === signal.linked_entity_id)
     );
     if (isPosition) {
       score += 40;
@@ -33,7 +37,8 @@ export class SalienceEngine {
       score += 20;
     }
 
-    const touchesQuestion = context.standing_question_keywords.some(kw =>
+    const questionKeywords = context.standing_question_keywords || context.question_category_keys || [];
+    const touchesQuestion = questionKeywords.some(kw =>
       signal.narrative_summary.toLowerCase().includes(kw.toLowerCase()) ||
       signal.canonical_metric_key.toLowerCase().includes(kw.toLowerCase())
     );
@@ -47,5 +52,14 @@ export class SalienceEngine {
     else if (signal.severity === SignalSeverity.WARN) multiplier = 1.2;
 
     return Number((score * multiplier).toFixed(2));
+  }
+
+  public rankSignals(signals: readonly Signal[], context: BookContext): readonly Signal[] {
+    return signals
+      .map(s => ({
+        ...s,
+        salience_score: this.calculateSalience(s, context)
+      }))
+      .sort((a, b) => b.salience_score - a.salience_score);
   }
 }
