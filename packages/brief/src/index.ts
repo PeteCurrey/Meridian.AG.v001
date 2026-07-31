@@ -1,5 +1,7 @@
 import { Pillar } from "../../core/src/index.ts";
 import type { Signal, Observation, BookThesis, BookQuestion } from "../../core/src/index.ts";
+import { LLMClient } from "../../llm/src/index.ts";
+import type { LLMBriefOutput } from "../../llm/src/index.ts";
 
 export interface CitationRef {
   readonly ref_id: string; // observation_id or signal_id
@@ -44,14 +46,20 @@ export interface DailyBrief {
 }
 
 export class BriefEngine {
-  public generateBrief(
+  private readonly llmClient: LLMClient;
+
+  constructor(llmClient: LLMClient = new LLMClient()) {
+    this.llmClient = llmClient;
+  }
+
+  public async generateBrief(
     windowStartIso: string,
     windowEndIso: string,
     signals: readonly Signal[],
     observations: readonly Observation[],
     theses: readonly BookThesis[],
     questions: readonly BookQuestion[]
-  ): DailyBrief {
+  ): Promise<DailyBrief> {
     // 1. What Changed (Deltas, Anomalies, Absences)
     const whatChanged: BriefItem[] = signals
       .filter(s => s.signal_type !== "DISAGREEMENT")
@@ -82,7 +90,6 @@ export class BriefEngine {
 
     // 3. Thesis Status Evaluation
     const thesisEvaluations: ThesisStatusEvaluation[] = theses.map(th => {
-      // Check if any signal touches thesis falsification condition
       const riskSignal = signals.find(s =>
         s.touches_thesis_falsification ||
         (s.linked_entity_id && th.linked_entity_ids.includes(s.linked_entity_id) && s.signal_type === "DISAGREEMENT")
@@ -126,11 +133,7 @@ export class BriefEngine {
 
     const isThin = signals.length === 0 && observations.length === 0;
 
-    return {
-      id: crypto.randomUUID(),
-      generated_at: new Date().toISOString(),
-      window_start: windowStartIso,
-      window_end: windowEndIso,
+    const fallbackBriefOutput: LLMBriefOutput = {
       executive_summary: isThin
         ? "DATA THIN: Zero observations or signals captured in 24h window. Automation pipeline active."
         : `DAILY EXECUTIVE BRIEF: ${signals.length} active signals detected across ${observations.length} observations. ${thesisEvaluations.filter(t => t.status === "FALSIFICATION_RISK").length} thesis flagged for FALSIFICATION RISK.`,
@@ -138,6 +141,23 @@ export class BriefEngine {
       what_disagrees: whatDisagrees,
       thesis_evaluations: thesisEvaluations,
       question_progress: questionProgress
+    };
+
+    const contextText = `Observations:\n${observations.map(o => `[${o.id}] ${o.source_id}:${o.metric_key} = ${o.value}`).join("\n")}\nSignals:\n${signals.map(s => `[${s.id}] ${s.narrative_summary}`).join("\n")}`;
+
+    const llmRes = await this.llmClient.generateStructuredBrief(contextText, fallbackBriefOutput);
+    const briefContent = llmRes.ok ? llmRes.value : fallbackBriefOutput;
+
+    return {
+      id: crypto.randomUUID(),
+      generated_at: new Date().toISOString(),
+      window_start: windowStartIso,
+      window_end: windowEndIso,
+      executive_summary: briefContent.executive_summary,
+      what_changed: briefContent.what_changed as BriefItem[],
+      what_disagrees: briefContent.what_disagrees as BriefItem[],
+      thesis_evaluations: briefContent.thesis_evaluations as ThesisStatusEvaluation[],
+      question_progress: briefContent.question_progress as QuestionProgressEvaluation[]
     };
   }
 }
