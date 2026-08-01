@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "build": "pnpm --filter @meridian/terminal build",
+    "build": "pnpm --filter @meridian/terminal... build",
     "test": "turbo run test",
     "lint": "turbo run lint",
     "check:gates": "node scripts/ci-gates.js"
