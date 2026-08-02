@@ -1,202 +1,168 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { tokens, Panel, StateBanner } from "@meridian/ui";
 
 export default function BriefPage() {
-  const briefData = {
-    generated_at: "2026-07-31T10:00:00Z",
-    window: "2026-07-30T10:00:00Z to 2026-07-31T10:00:00Z",
-    executive_summary: "DAILY EXECUTIVE BRIEF: 4 active signals detected across 21 Wave 1 observations. 1 thesis flagged for FALSIFICATION RISK due to 29.41% prediction market divergence.",
-    what_changed: [
-      {
-        id: "c-001",
-        text: "coingecko:CRYPTO_BTC_PRICE_USD — Statistical Outlier: recorded $95,000 (4.00 sigma outside historical range)",
-        citation_ref: "sig-anomaly-001",
-        entity_id: null
-      },
-      {
-        id: "c-002",
-        text: "twelve_data:TWELVE_DATA_FEED_ABSENCE — SLA Overrun: failed to emit expected payload within 300s SLA",
-        citation_ref: "sig-absence-001",
-        entity_id: null
-      },
-      {
-        id: "c-003",
-        text: "fred:FRED_GDP — Jumped by 7.50% past 5.00% delta threshold",
-        citation_ref: "sig-delta-001",
-        entity_id: null
+  const [brief, setBrief] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchBrief = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/brief");
+      if (res.ok) {
+        const data = await res.json();
+        setBrief(data);
       }
-    ],
-    what_disagrees: [
-      {
-        id: "d-001",
-        text: "Cross-source divergence on FED_RATE_CUT_PROBABILITY: polymarket (68%) vs kalshi (48%) diverged by 29.41%",
-        citation_ref: "sig-disag-001",
-        entity_id: "e-apex-tech-001",
-        entity_name: "Apex Tech Inc"
-      }
-    ],
-    thesis_evaluations: [
-      {
-        id: "th-001",
-        statement: "US Fed will cut rates in Q4 2026 due to cooling labor dynamics.",
-        status: "FALSIFICATION_RISK",
-        confidence: 45,
-        falsification_condition: "Prediction market divergence > 25% or Core PCE > 3.2%",
-        triggering_signal: "sig-disag-001 (Polymarket vs Kalshi 29.41% divergence)"
-      }
-    ],
-    question_progress: [
-      {
-        id: "q-001",
-        question: "What is the implied trajectory of Fed interest rate cuts across prediction vs macro feeds?",
-        finding: "Polymarket assigns 68% probability while Kalshi assigns 48%. High uncertainty divergence.",
-        citation_ref: "obs-poly-001"
-      }
-    ]
+    } catch (e) {
+      console.error("Failed to fetch brief:", e);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchBrief();
+  }, []);
 
   return (
     <div
       style={{
-        backgroundColor: tokens.colors.bg,
+        backgroundColor: "transparent",
         color: tokens.colors.textPrimary,
-        fontFamily: tokens.typography.fontFamilyMono,
+        fontFamily: tokens.typography.fontFamilySans,
         minHeight: "100%",
-        padding: tokens.spacing.lg,
-        boxSizing: "border-box"
+        display: "flex",
+        flexDirection: "column",
+        gap: tokens.spacing.lg
       }}
     >
       {/* Header */}
-      <header style={{ marginBottom: tokens.spacing.lg, borderBottom: `1px solid ${tokens.colors.borderHairline}`, paddingBottom: tokens.spacing.md }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h1 style={{ margin: 0, fontSize: tokens.typography.fontSizeLg, color: tokens.colors.accentGreen }}>
-            MERIDIAN EXECUTIVE DAILY BRIEF
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: tokens.typography.fontSizeXl, color: tokens.colors.textPrimary, fontWeight: tokens.typography.fontWeightBold }}>
+            Executive Daily Brief
           </h1>
-          <span style={{ fontSize: tokens.typography.fontSizeXs, color: tokens.colors.textMuted }}>
-            WINDOW: {briefData.window}
-          </span>
+          <p style={{ margin: "4px 0 0 0", color: tokens.colors.textMuted, fontSize: tokens.typography.fontSizeSm }}>
+            Synthesized intelligence feed across observations, cross-source deltas, and thesis falsification risks.
+          </p>
         </div>
-        <p style={{ margin: "8px 0 0 0", color: tokens.colors.textPrimary, fontSize: tokens.typography.fontSizeSm, fontWeight: tokens.typography.fontWeightBold }}>
-          {briefData.executive_summary}
-        </p>
-      </header>
 
-      {/* 1. What Changed */}
-      <Panel title="SECTION 1 // WHAT CHANGED (DELTAS, ANOMALIES, ABSENCES)">
+        <button
+          onClick={fetchBrief}
+          disabled={loading}
+          style={{
+            padding: "8px 16px",
+            backgroundColor: tokens.colors.accentGreen,
+            color: "#ffffff",
+            border: "none",
+            borderRadius: "4px",
+            fontSize: tokens.typography.fontSizeXs,
+            fontWeight: tokens.typography.fontWeightMedium,
+            cursor: "pointer"
+          }}
+        >
+          {loading ? "Synthesizing..." : "⚡ Generate Live Brief"}
+        </button>
+      </div>
+
+      {/* Executive Summary Card */}
+      <div
+        style={{
+          padding: tokens.spacing.lg,
+          backgroundColor: tokens.colors.panelBg,
+          border: `1px solid ${tokens.colors.borderHairline}`,
+          borderRadius: "6px"
+        }}
+      >
+        <div style={{ fontSize: tokens.typography.fontSizeXs, fontWeight: tokens.typography.fontWeightBold, color: tokens.colors.textMuted, letterSpacing: "0.05em", marginBottom: "8px" }}>
+          EXECUTIVE SUMMARY // 24-HOUR SYNTHESIS
+        </div>
+        <div style={{ fontSize: tokens.typography.fontSizeMd, fontWeight: tokens.typography.fontWeightMedium, color: tokens.colors.textPrimary, lineHeight: 1.5 }}>
+          {brief?.executive_summary || (loading ? "Generating grounded executive summary..." : "No summary available.")}
+        </div>
+      </div>
+
+      {/* Section 1: What Changed */}
+      <Panel title="SECTION 1 // WHAT CHANGED (DELTAS & ANOMALIES)">
         <div style={{ display: "flex", flexDirection: "column", gap: tokens.spacing.sm }}>
-          {briefData.what_changed.map((item) => (
+          {brief?.what_changed?.map((item: any) => (
             <div
               key={item.id}
               style={{
+                padding: tokens.spacing.md,
                 backgroundColor: tokens.colors.bg,
                 border: `1px solid ${tokens.colors.borderHairline}`,
-                padding: tokens.spacing.sm,
+                borderRadius: "4px",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center"
               }}
             >
-              <span>{item.text}</span>
-              <span style={{ fontSize: "9px", color: tokens.colors.accentGreen, backgroundColor: `${tokens.colors.accentGreen}15`, padding: "2px 6px", border: `1px solid ${tokens.colors.accentGreen}` }}>
-                [CIT: {item.citation_ref}]
+              <span style={{ fontSize: tokens.typography.fontSizeSm, fontWeight: tokens.typography.fontWeightMedium }}>{item.text}</span>
+              <span style={{ fontSize: "11px", fontFamily: tokens.typography.fontFamilyMono, color: tokens.colors.accentGreen, backgroundColor: "#f0fdf4", padding: "2px 8px", borderRadius: "4px", border: "1px solid #bbf7d0" }}>
+                CITATION: {item.citation?.ref_id || item.citation_ref}
               </span>
             </div>
-          ))}
+          )) || <div style={{ color: tokens.colors.textMuted, fontSize: tokens.typography.fontSizeSm }}>Loading changes...</div>}
         </div>
       </Panel>
 
-      {/* 2. What Disagrees */}
+      {/* Section 2: What Disagrees */}
       <Panel title="SECTION 2 // WHAT DISAGREES (CROSS-SOURCE DIVERGENCE)">
         <div style={{ display: "flex", flexDirection: "column", gap: tokens.spacing.sm }}>
-          {briefData.what_disagrees.map((item) => (
+          {brief?.what_disagrees?.map((item: any) => (
             <div
               key={item.id}
               style={{
-                backgroundColor: tokens.colors.bg,
-                border: `1px solid ${tokens.colors.warningAmber}`,
-                padding: tokens.spacing.sm,
+                padding: tokens.spacing.md,
+                backgroundColor: "#fffbebf5",
+                border: "1px solid #fde68a",
+                borderRadius: "4px",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center"
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: tokens.spacing.md }}>
-                <span style={{ color: tokens.colors.warningAmber, fontWeight: tokens.typography.fontWeightBold }}>{item.text}</span>
-                {item.entity_id && (
-                  <a
-                    href={`/entities/${item.entity_id}`}
-                    style={{ fontSize: tokens.typography.fontSizeXs, color: tokens.colors.accentGreen, textDecoration: "underline" }}
-                  >
-                    [DOSSIER: {item.entity_name}]
-                  </a>
-                )}
-              </div>
-              <span style={{ fontSize: "9px", color: tokens.colors.warningAmber, backgroundColor: `${tokens.colors.warningAmber}15`, padding: "2px 6px", border: `1px solid ${tokens.colors.warningAmber}` }}>
-                [CIT: {item.citation_ref}]
+              <span style={{ fontSize: tokens.typography.fontSizeSm, fontWeight: tokens.typography.fontWeightMedium, color: "#92400e" }}>
+                {item.text}
+              </span>
+              <span style={{ fontSize: "11px", fontFamily: tokens.typography.fontFamilyMono, color: "#b45309", backgroundColor: "#fef3c7", padding: "2px 8px", borderRadius: "4px", border: "1px solid #fde68a" }}>
+                CITATION: {item.citation?.ref_id || item.citation_ref}
               </span>
             </div>
-          ))}
+          )) || <div style={{ color: tokens.colors.textMuted, fontSize: tokens.typography.fontSizeSm }}>Loading divergence signals...</div>}
         </div>
       </Panel>
 
-      {/* 3. Thesis Status */}
-      <Panel title="SECTION 3 // THESIS STATUS (BOOK EVALUATION)">
+      {/* Section 3: Thesis Status */}
+      <Panel title="SECTION 3 // THESIS STATUS (FALSIFICATION EVALUATION)">
         <div style={{ display: "flex", flexDirection: "column", gap: tokens.spacing.sm }}>
-          {briefData.thesis_evaluations.map((th) => (
+          {brief?.thesis_evaluations?.map((th: any) => (
             <div
               key={th.id}
               style={{
-                backgroundColor: tokens.colors.bg,
-                border: `1px solid ${tokens.colors.offlineRed}`,
                 padding: tokens.spacing.md,
+                backgroundColor: tokens.colors.bg,
+                border: "1px solid #fecaca",
+                borderRadius: "4px",
                 display: "flex",
                 flexDirection: "column",
                 gap: "6px"
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontWeight: tokens.typography.fontWeightBold }}>{th.statement}</span>
-                <span style={{ fontSize: tokens.typography.fontSizeXs, color: tokens.colors.offlineRed, backgroundColor: `${tokens.colors.offlineRed}20`, padding: "2px 8px", fontWeight: tokens.typography.fontWeightBold, border: `1px solid ${tokens.colors.offlineRed}` }}>
+                <span style={{ fontWeight: tokens.typography.fontWeightBold, color: tokens.colors.textPrimary }}>{th.statement || th.thesis_statement}</span>
+                <span style={{ fontSize: tokens.typography.fontSizeXs, fontWeight: tokens.typography.fontWeightBold, color: "#dc2626", backgroundColor: "#fef2f2", padding: "2px 8px", borderRadius: "4px", border: "1px solid #fecaca" }}>
                   [{th.status}] (CONFIDENCE: {th.confidence}%)
                 </span>
               </div>
               <div style={{ fontSize: tokens.typography.fontSizeXs, color: tokens.colors.textMuted }}>
-                FALSIFICATION CONDITION: <span style={{ color: tokens.colors.offlineRed }}>{th.falsification_condition}</span>
-              </div>
-              <div style={{ fontSize: tokens.typography.fontSizeXs, color: tokens.colors.offlineRed, fontWeight: tokens.typography.fontWeightMedium }}>
-                🚨 TRIGGERING SIGNAL: {th.triggering_signal}
+                FALSIFICATION CONDITION: <span style={{ color: "#dc2626" }}>{th.falsification_condition}</span>
               </div>
             </div>
-          ))}
-        </div>
-      </Panel>
-
-      {/* 4. Standing Question Progress */}
-      <Panel title="SECTION 4 // STANDING QUESTION PROGRESS">
-        <div style={{ display: "flex", flexDirection: "column", gap: tokens.spacing.sm }}>
-          {briefData.question_progress.map((q) => (
-            <div
-              key={q.id}
-              style={{
-                backgroundColor: tokens.colors.bg,
-                border: `1px solid ${tokens.colors.borderHairline}`,
-                padding: tokens.spacing.sm,
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center"
-              }}
-            >
-              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                <span style={{ fontWeight: tokens.typography.fontWeightBold, color: tokens.colors.accentGreen }}>{q.question}</span>
-                <span style={{ fontSize: tokens.typography.fontSizeSm, color: tokens.colors.textPrimary }}>{q.finding}</span>
-              </div>
-              <span style={{ fontSize: "9px", color: tokens.colors.accentGreen, backgroundColor: `${tokens.colors.accentGreen}15`, padding: "2px 6px", border: `1px solid ${tokens.colors.accentGreen}` }}>
-                [CIT: {q.citation_ref}]
-              </span>
-            </div>
-          ))}
+          )) || <div style={{ color: tokens.colors.textMuted, fontSize: tokens.typography.fontSizeSm }}>Loading thesis status...</div>}
         </div>
       </Panel>
     </div>

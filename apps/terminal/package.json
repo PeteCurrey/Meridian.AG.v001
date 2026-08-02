@@ -13,6 +13,11 @@
     "@meridian/ui": "workspace:*",
     "@meridian/registry": "workspace:*",
     "@meridian/engine": "workspace:*",
+    "@meridian/brief": "workspace:*",
+    "@meridian/edge": "workspace:*",
+    "@meridian/council": "workspace:*",
+    "@meridian/llm": "workspace:*",
+    "@meridian/resolve": "workspace:*",
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

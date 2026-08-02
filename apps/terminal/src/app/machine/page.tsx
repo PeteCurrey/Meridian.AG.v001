@@ -1,111 +1,62 @@
 "use client";
 
-import React, { useState } from "react";
-import { tokens, Panel, DataTable, Column, KillSwitch, StateBanner } from "@meridian/ui";
-
-interface AuditLogRow {
-  id: string;
-  job_name: string;
-  trigger_type: string;
-  status: "SUCCESS" | "FAILED" | "REJECTED_KILL_SWITCH";
-  duration_ms: number;
-  rows_processed: number;
-  cost_usd_scaled: string;
-  timestamp: string;
-}
-
-interface CronSchedule {
-  id: string;
-  job_name: string;
-  cron_expression: string;
-  cadence: string;
-  next_run_iso: string;
-  status: "ACTIVE" | "HALTED";
-}
+import React, { useEffect, useState } from "react";
+import { tokens, Panel, DataTable, Column, StateBanner } from "@meridian/ui";
 
 export default function MachinePage() {
-  const [isKillSwitchActive, setIsKillSwitchActive] = useState(false);
+  const [machineData, setMachineData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const cronSchedules: CronSchedule[] = [
-    {
-      id: "cron-001",
-      job_name: "REALTIME_INGESTION_PASS",
-      cron_expression: "*/5 * * * *",
-      cadence: "EVERY_5_MIN",
-      next_run_iso: "2026-07-31T10:50:00Z",
-      status: isKillSwitchActive ? "HALTED" : "ACTIVE"
-    },
-    {
-      id: "cron-002",
-      job_name: "HOURLY_MACRO_PASS",
-      cron_expression: "0 * * * *",
-      cadence: "HOURLY",
-      next_run_iso: "2026-07-31T11:00:00Z",
-      status: isKillSwitchActive ? "HALTED" : "ACTIVE"
-    },
-    {
-      id: "cron-003",
-      job_name: "DAILY_BRIEF_GENERATION",
-      cron_expression: "0 6 * * *",
-      cadence: "DAILY_0600_UTC",
-      next_run_iso: "2026-08-01T06:00:00Z",
-      status: isKillSwitchActive ? "HALTED" : "ACTIVE"
+  const fetchMachineStatus = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/machine");
+      if (res.ok) {
+        const data = await res.json();
+        setMachineData(data);
+      }
+    } catch (e) {
+      console.error("Failed to fetch machine status:", e);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
-  const [auditLogs, setAuditLogs] = useState<AuditLogRow[]>([
-    {
-      id: "log-001",
-      job_name: "INGESTION_PASS_WAVE_1",
-      trigger_type: "CADENCE_PASS",
-      status: "SUCCESS",
-      duration_ms: 142,
-      rows_processed: 21,
-      cost_usd_scaled: "25",
-      timestamp: "2026-07-31T10:45:00Z"
-    },
-    {
-      id: "log-002",
-      job_name: "EDGE_DETECTION_PASS",
-      trigger_type: "AFTER_INGESTION",
-      status: "SUCCESS",
-      duration_ms: 38,
-      rows_processed: 4,
-      cost_usd_scaled: "0",
-      timestamp: "2026-07-31T10:45:01Z"
-    },
-    {
-      id: "log-003",
-      job_name: "DAILY_BRIEF_GENERATION",
-      trigger_type: "CRON_0600_UTC",
-      status: "SUCCESS",
-      duration_ms: 85,
-      rows_processed: 1,
-      cost_usd_scaled: "0",
-      timestamp: "2026-07-31T06:00:00Z"
+  useEffect(() => {
+    fetchMachineStatus();
+  }, []);
+
+  const handleToggleKillSwitch = async () => {
+    try {
+      const nextState = !machineData?.kill_switch_active;
+      const res = await fetch("/api/machine", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kill_switch_active: nextState })
+      });
+      if (res.ok) {
+        fetchMachineStatus();
+      }
+    } catch (e) {
+      console.error("Kill switch toggle error:", e);
     }
-  ]);
+  };
 
-  const cronColumns: Column<CronSchedule>[] = [
+  const cronColumns: Column<any>[] = [
     {
       key: "job_name",
       header: "JOB NAME",
-      render: (row) => <span style={{ fontWeight: tokens.typography.fontWeightBold }}>{row.job_name}</span>
+      render: (row) => <span style={{ fontWeight: tokens.typography.fontWeightBold, color: tokens.colors.textPrimary }}>{row.job_name}</span>
     },
     {
       key: "cron",
       header: "CRON EXPRESSION",
-      render: (row) => <span style={{ color: tokens.colors.accentGreen }}>{row.cron_expression}</span>
+      render: (row) => <span style={{ fontFamily: tokens.typography.fontFamilyMono, color: tokens.colors.accentGreen }}>{row.cron_expression}</span>
     },
     {
       key: "cadence",
       header: "CADENCE",
-      render: (row) => row.cadence
-    },
-    {
-      key: "next_run",
-      header: "NEXT RUN (UTC)",
-      render: (row) => row.next_run_iso
+      render: (row) => <span style={{ fontSize: tokens.typography.fontSizeXs }}>{row.cadence}</span>
     },
     {
       key: "status",
@@ -117,11 +68,11 @@ export default function MachinePage() {
             style={{
               fontSize: tokens.typography.fontSizeXs,
               fontWeight: tokens.typography.fontWeightBold,
-              color: isHalted ? tokens.colors.offlineRed : tokens.colors.accentGreen,
-              backgroundColor: isHalted ? `${tokens.colors.offlineRed}15` : `${tokens.colors.accentGreen}15`,
-              border: `1px solid ${isHalted ? tokens.colors.offlineRed : tokens.colors.accentGreen}`,
-              padding: "2px 6px",
-              borderRadius: "2px"
+              color: isHalted ? "#dc2626" : "#16a34a",
+              backgroundColor: isHalted ? "#fef2f2" : "#f0fdf4",
+              border: `1px solid ${isHalted ? "#fecaca" : "#bbf7d0"}`,
+              padding: "2px 8px",
+              borderRadius: "4px"
             }}
           >
             {row.status}
@@ -131,11 +82,11 @@ export default function MachinePage() {
     }
   ];
 
-  const logColumns: Column<AuditLogRow>[] = [
+  const logColumns: Column<any>[] = [
     {
       key: "timestamp",
       header: "TIMESTAMP",
-      render: (row) => row.timestamp
+      render: (row) => <span style={{ fontFamily: tokens.typography.fontFamilyMono, fontSize: tokens.typography.fontSizeXs }}>{row.timestamp}</span>
     },
     {
       key: "job_name",
@@ -143,29 +94,21 @@ export default function MachinePage() {
       render: (row) => <span style={{ fontWeight: tokens.typography.fontWeightMedium }}>{row.job_name}</span>
     },
     {
-      key: "trigger",
-      header: "TRIGGER TYPE",
-      render: (row) => <span style={{ color: tokens.colors.textMuted }}>{row.trigger_type}</span>
-    },
-    {
       key: "status",
       header: "STATUS",
       render: (row) => {
-        let color: string = tokens.colors.accentGreen;
-        if (row.status === "FAILED") color = tokens.colors.warningAmber;
-        if (row.status === "REJECTED_KILL_SWITCH") color = tokens.colors.offlineRed;
+        let color = "#16a34a";
+        let bg = "#f0fdf4";
+        let border = "#bbf7d0";
+
+        if (row.status === "REJECTED_KILL_SWITCH") {
+          color = "#dc2626";
+          bg = "#fef2f2";
+          border = "#fecaca";
+        }
 
         return (
-          <span
-            style={{
-              fontSize: tokens.typography.fontSizeXs,
-              fontWeight: tokens.typography.fontWeightBold,
-              color,
-              border: `1px solid ${color}`,
-              padding: "2px 6px",
-              borderRadius: "2px"
-            }}
-          >
+          <span style={{ fontSize: tokens.typography.fontSizeXs, fontWeight: tokens.typography.fontWeightBold, color, backgroundColor: bg, border: `1px solid ${border}`, padding: "2px 8px", borderRadius: "4px" }}>
             {row.status}
           </span>
         );
@@ -174,48 +117,63 @@ export default function MachinePage() {
     {
       key: "duration",
       header: "DURATION",
-      render: (row) => `${row.duration_ms}ms`
+      render: (row) => <span style={{ fontFamily: tokens.typography.fontFamilyMono }}>{row.duration_ms}ms</span>
     },
     {
       key: "rows",
       header: "ROWS PROCESSED",
-      render: (row) => row.rows_processed
-    },
-    {
-      key: "cost",
-      header: "COST (USD)",
-      render: (row) => `$0.${row.cost_usd_scaled.padStart(2, "0")}`
+      render: (row) => <span style={{ fontFamily: tokens.typography.fontFamilyMono }}>{row.rows_processed}</span>
     }
   ];
 
   return (
     <div
       style={{
-        backgroundColor: tokens.colors.bg,
+        backgroundColor: "transparent",
         color: tokens.colors.textPrimary,
-        fontFamily: tokens.typography.fontFamilyMono,
+        fontFamily: tokens.typography.fontFamilySans,
         minHeight: "100%",
-        padding: tokens.spacing.lg,
-        boxSizing: "border-box"
+        display: "flex",
+        flexDirection: "column",
+        gap: tokens.spacing.lg
       }}
     >
-      <header style={{ marginBottom: tokens.spacing.lg, borderBottom: `1px solid ${tokens.colors.borderHairline}`, paddingBottom: tokens.spacing.md }}>
-        <h1 style={{ margin: 0, fontSize: tokens.typography.fontSizeLg, color: tokens.colors.accentGreen }}>
-          MACHINE CONTROL ROOM // BACKGROUND AUTOMATION ENGINE
-        </h1>
-        <p style={{ margin: "4px 0 0 0", color: tokens.colors.textMuted, fontSize: tokens.typography.fontSizeSm }}>
-          Active Cron Triggers, Immutable Job Audit Ledger, and Emergency Kill Switch Control
-        </p>
-      </header>
+      {/* Header & Kill Switch Toggle */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: tokens.typography.fontSizeXl, color: tokens.colors.textPrimary, fontWeight: tokens.typography.fontWeightBold }}>
+            Machine Control Room
+          </h1>
+          <p style={{ margin: "4px 0 0 0", color: tokens.colors.textMuted, fontSize: tokens.typography.fontSizeSm }}>
+            Background automation schedules, execution tier management, and emergency kill switch controls.
+          </p>
+        </div>
 
-      {isKillSwitchActive && (
+        <button
+          onClick={handleToggleKillSwitch}
+          style={{
+            padding: "10px 20px",
+            backgroundColor: machineData?.kill_switch_active ? "#dc2626" : "#16a34a",
+            color: "#ffffff",
+            fontWeight: tokens.typography.fontWeightBold,
+            fontSize: tokens.typography.fontSizeSm,
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer"
+          }}
+        >
+          {machineData?.kill_switch_active ? "🚨 KILL SWITCH ACTIVE (CLICK TO RESUME)" : "🛡️ KILL SWITCH READY (CLICK TO HALT)"}
+        </button>
+      </div>
+
+      {machineData?.kill_switch_active && (
         <StateBanner
           state="FEED_OFFLINE"
           reason="EMERGENCY KILL SWITCH ACTIVE: All background automation jobs and scheduled triggers are HALTED."
         />
       )}
 
-      {/* Tier Selector Bar */}
+      {/* Tier Control Panel */}
       <Panel title="AUTOMATION EXECUTION TIER CONTROL">
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
@@ -223,24 +181,23 @@ export default function MachinePage() {
               CURRENT TIER: TIER 1 (WATCH ONLY)
             </div>
             <div style={{ fontSize: tokens.typography.fontSizeXs, color: tokens.colors.textMuted, marginTop: "2px" }}>
-              Ingestion, entity resolution, edge detection, and brief generation run automatically. Zero trading or broker actions permitted.
+              Ingestion, entity resolution, edge detection, and brief generation run automatically. Zero execution actions permitted.
             </div>
           </div>
 
           <div style={{ display: "flex", gap: "6px" }}>
-            {["TIER 0 (MANUAL)", "TIER 1 (WATCH)", "TIER 2 (ASSISTED) [LOCKED]", "TIER 3 (AUTONOMOUS) [LOCKED]"].map((tier, idx) => (
+            {["TIER 0 (MANUAL)", "TIER 1 (WATCH)", "TIER 2 (ASSISTED) [LOCKED]"].map((tier, idx) => (
               <button
                 key={tier}
                 disabled={idx >= 2}
                 style={{
                   padding: "6px 12px",
+                  borderRadius: "4px",
                   fontSize: tokens.typography.fontSizeXs,
-                  fontFamily: tokens.typography.fontFamilyMono,
                   backgroundColor: idx === 1 ? tokens.colors.accentGreen : tokens.colors.panelBg,
-                  color: idx === 1 ? "#000" : tokens.colors.textMuted,
+                  color: idx === 1 ? "#ffffff" : tokens.colors.textMuted,
                   border: `1px solid ${tokens.colors.borderHairline}`,
-                  cursor: idx >= 2 ? "not-allowed" : "pointer",
-                  opacity: idx >= 2 ? 0.5 : 1
+                  cursor: idx >= 2 ? "not-allowed" : "pointer"
                 }}
               >
                 {tier}
@@ -253,18 +210,20 @@ export default function MachinePage() {
       {/* Active Cron Schedules */}
       <Panel title="ACTIVE BACKGROUND CRON SCHEDULES">
         <DataTable
-          data={cronSchedules}
+          data={machineData?.schedules || []}
           columns={cronColumns}
           keyExtractor={(row) => row.id}
+          emptyMessage="No schedules."
         />
       </Panel>
 
-      {/* Job Audit Log */}
-      <Panel title="IMMUTABLE JOB AUDIT LOG (AUDIT_LOG TABLE)">
+      {/* Immutable Job Audit Log */}
+      <Panel title="IMMUTABLE JOB AUDIT LOG">
         <DataTable
-          data={auditLogs}
+          data={machineData?.audit_logs || []}
           columns={logColumns}
           keyExtractor={(row) => row.id}
+          emptyMessage="No audit logs."
         />
       </Panel>
     </div>

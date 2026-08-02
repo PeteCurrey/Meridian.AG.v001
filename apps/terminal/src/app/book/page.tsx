@@ -1,32 +1,35 @@
 "use client";
 
-import React, { useState } from "react";
-import { tokens, Panel, DataTable, Column, Value, StateBanner } from "@meridian/ui";
-
-interface ThesisItem {
-  id: string;
-  text: string;
-  falsification_condition: string;
-  review_date: string;
-  confidence: number;
-}
+import React, { useEffect, useState } from "react";
+import { tokens, Panel, DataTable, Column, StateBanner } from "@meridian/ui";
 
 export default function BookPage() {
-  const [theses, setTheses] = useState<ThesisItem[]>([
-    {
-      id: "th-001",
-      text: "US Fed will cut rates in Q4 2026 due to cooling labor dynamics.",
-      falsification_condition: "Core PCE inflation accelerates above 3.2% year-over-year.",
-      review_date: "2026-10-01",
-      confidence: 75
-    }
-  ]);
-
+  const [theses, setTheses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [newThesisText, setNewThesisText] = useState("");
   const [newFalsification, setNewFalsification] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleAddThesis = (e: React.FormEvent) => {
+  const fetchTheses = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/book");
+      if (res.ok) {
+        const data = await res.json();
+        setTheses(data.theses || []);
+      }
+    } catch (e) {
+      console.error("Failed to fetch theses:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTheses();
+  }, []);
+
+  const handleAddThesis = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
@@ -36,30 +39,42 @@ export default function BookPage() {
       return;
     }
 
-    const created: ThesisItem = {
-      id: `th-${Date.now()}`,
-      text: newThesisText,
-      falsification_condition: newFalsification.trim(),
-      review_date: "2026-12-31",
-      confidence: 70
-    };
+    try {
+      const res = await fetch("/api/book", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: newThesisText,
+          falsification_condition: newFalsification,
+          confidence: 75
+        })
+      });
 
-    setTheses([...theses, created]);
-    setNewThesisText("");
-    setNewFalsification("");
+      if (!res.ok) {
+        const errData = await res.json();
+        setErrorMessage(errData.error || "Failed to save thesis");
+        return;
+      }
+
+      setNewThesisText("");
+      setNewFalsification("");
+      fetchTheses();
+    } catch (err: any) {
+      setErrorMessage(err.message || "Network error");
+    }
   };
 
-  const thesisColumns: Column<ThesisItem>[] = [
+  const thesisColumns: Column<any>[] = [
     {
       key: "text",
       header: "THESIS STATEMENT",
-      render: (row) => <span style={{ fontWeight: tokens.typography.fontWeightMedium }}>{row.text}</span>
+      render: (row) => <span style={{ fontWeight: tokens.typography.fontWeightMedium, color: tokens.colors.textPrimary }}>{row.text}</span>
     },
     {
       key: "falsification",
       header: "FALSIFICATION CONDITION (MANDATORY)",
       render: (row) => (
-        <span style={{ color: tokens.colors.offlineRed, fontWeight: tokens.typography.fontWeightBold }}>
+        <span style={{ color: "#dc2626", fontWeight: tokens.typography.fontWeightMedium, backgroundColor: "#fef2f2", padding: "2px 8px", borderRadius: "4px", border: "1px solid #fecaca" }}>
           [FALSIFY IF] {row.falsification_condition}
         </span>
       )
@@ -67,42 +82,44 @@ export default function BookPage() {
     {
       key: "confidence",
       header: "CONFIDENCE",
-      render: (row) => <span style={{ color: tokens.colors.accentGreen }}>{row.confidence}%</span>
+      render: (row) => <span style={{ color: tokens.colors.accentGreen, fontWeight: tokens.typography.fontWeightBold, fontFamily: tokens.typography.fontFamilyMono }}>{row.confidence}%</span>
     },
     {
       key: "review_date",
       header: "REVIEW DATE",
-      render: (row) => row.review_date
+      render: (row) => <span style={{ fontFamily: tokens.typography.fontFamilyMono, fontSize: tokens.typography.fontSizeXs }}>{row.review_date}</span>
     }
   ];
 
   return (
     <div
       style={{
-        backgroundColor: tokens.colors.bg,
+        backgroundColor: "transparent",
         color: tokens.colors.textPrimary,
-        fontFamily: tokens.typography.fontFamilyMono,
+        fontFamily: tokens.typography.fontFamilySans,
         minHeight: "100%",
-        padding: tokens.spacing.lg,
-        boxSizing: "border-box"
+        display: "flex",
+        flexDirection: "column",
+        gap: tokens.spacing.lg
       }}
     >
-      <header style={{ marginBottom: tokens.spacing.lg }}>
-        <h1 style={{ margin: 0, fontSize: tokens.typography.fontSizeLg, color: tokens.colors.accentGreen }}>
-          THE BOOK // PERSONAL CONTEXT & STANDING THESES
+      {/* Header */}
+      <div>
+        <h1 style={{ margin: 0, fontSize: tokens.typography.fontSizeXl, color: tokens.colors.textPrimary, fontWeight: tokens.typography.fontWeightBold }}>
+          The Book // Standing Investment Theses
         </h1>
         <p style={{ margin: "4px 0 0 0", color: tokens.colors.textMuted, fontSize: tokens.typography.fontSizeSm }}>
-          Watchlist, Manual Positions, Falsification-Gated Investment Theses, and Standing Questions
+          Standing investment theses with mandatory falsification conditions to prevent narrative bias.
         </p>
-      </header>
+      </div>
 
       {errorMessage && <StateBanner state="DEGRADED" reason={errorMessage} />}
 
       {/* New Thesis Form */}
       <Panel title="ADD STANDING THESIS (MANDATORY FALSIFICATION CONDITION)">
-        <form onSubmit={handleAddThesis} style={{ display: "flex", flexDirection: "column", gap: tokens.spacing.sm }}>
+        <form onSubmit={handleAddThesis} style={{ display: "flex", flexDirection: "column", gap: tokens.spacing.md }}>
           <div>
-            <label style={{ display: "block", fontSize: tokens.typography.fontSizeXs, color: tokens.colors.textMuted, marginBottom: "4px" }}>
+            <label style={{ display: "block", fontSize: tokens.typography.fontSizeXs, fontWeight: tokens.typography.fontWeightBold, color: tokens.colors.textMuted, marginBottom: "4px" }}>
               THESIS STATEMENT:
             </label>
             <input
@@ -113,17 +130,18 @@ export default function BookPage() {
               required
               style={{
                 width: "100%",
-                padding: "8px",
-                backgroundColor: tokens.colors.bg,
-                color: tokens.colors.textPrimary,
+                padding: "10px 12px",
+                borderRadius: "4px",
                 border: `1px solid ${tokens.colors.borderHairline}`,
-                fontFamily: tokens.typography.fontFamilyMono
+                fontSize: tokens.typography.fontSizeSm,
+                boxSizing: "border-box",
+                outline: "none"
               }}
             />
           </div>
 
           <div>
-            <label style={{ display: "block", fontSize: tokens.typography.fontSizeXs, color: tokens.colors.offlineRed, marginBottom: "4px" }}>
+            <label style={{ display: "block", fontSize: tokens.typography.fontSizeXs, fontWeight: tokens.typography.fontWeightBold, color: "#dc2626", marginBottom: "4px" }}>
               FALSIFICATION CONDITION (MANDATORY — CANNOT BE BLANK):
             </label>
             <input
@@ -133,11 +151,12 @@ export default function BookPage() {
               placeholder="e.g. TSMC monthly revenue drops > 5% YoY for two consecutive months"
               style={{
                 width: "100%",
-                padding: "8px",
-                backgroundColor: tokens.colors.bg,
-                color: tokens.colors.offlineRed,
-                border: `1px solid ${tokens.colors.offlineRed}`,
-                fontFamily: tokens.typography.fontFamilyMono
+                padding: "10px 12px",
+                borderRadius: "4px",
+                border: "1px solid #fecaca",
+                fontSize: tokens.typography.fontSizeSm,
+                boxSizing: "border-box",
+                outline: "none"
               }}
             />
           </div>
@@ -146,25 +165,27 @@ export default function BookPage() {
             type="submit"
             style={{
               alignSelf: "flex-start",
-              padding: "8px 16px",
+              padding: "10px 20px",
               backgroundColor: tokens.colors.accentGreen,
-              color: "#000000",
-              fontWeight: tokens.typography.fontWeightBold,
+              color: "#ffffff",
+              fontWeight: tokens.typography.fontWeightMedium,
+              fontSize: tokens.typography.fontSizeSm,
               border: "none",
-              cursor: "pointer",
-              fontFamily: tokens.typography.fontFamilyMono
+              borderRadius: "4px",
+              cursor: "pointer"
             }}
           >
-            SAVE THESIS
+            + Save Thesis to Book
           </button>
         </form>
       </Panel>
 
-      <Panel title="ACTIVE THESES">
+      <Panel title={`ACTIVE THESES (${theses.length})`}>
         <DataTable
           data={theses}
           columns={thesisColumns}
           keyExtractor={(row) => row.id}
+          emptyMessage="No active theses recorded."
         />
       </Panel>
     </div>

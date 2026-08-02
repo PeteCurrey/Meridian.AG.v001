@@ -1,33 +1,39 @@
 "use client";
 
-import React from "react";
-import { tokens, Panel, StateBanner } from "@meridian/ui";
+import React, { useEffect, useState } from "react";
+import { tokens, Panel, DataTable, Column, SourceBadge } from "@meridian/ui";
 
 export default function SourcesPage() {
+  const [sources, setSources] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch("/api/health")
+      .then((res) => res.json())
+      .then((data) => setSources(data.sources || []))
+      .catch(console.error);
+  }, []);
+
+  const columns: Column<any>[] = [
+    { key: "id", header: "SOURCE ID", render: (r) => <SourceBadge sourceId={r.source_id} name={r.name} /> },
+    { key: "name", header: "NAME", render: (r) => <span style={{ fontWeight: tokens.typography.fontWeightMedium }}>{r.name}</span> },
+    { key: "pillar", header: "PILLAR", render: (r) => r.pillar },
+    { key: "cadence", header: "CADENCE", render: (r) => r.cadence },
+    { key: "status", header: "CONNECTION STATUS", render: (r) => <span style={{ color: r.status === "HEALTHY" ? "#16a34a" : tokens.colors.textMuted, fontWeight: tokens.typography.fontWeightBold }}>{r.status}</span> }
+  ];
+
   return (
-    <div
-      style={{
-        backgroundColor: tokens.colors.bg,
-        color: tokens.colors.textPrimary,
-        fontFamily: tokens.typography.fontFamilySans,
-        minHeight: "100%",
-        padding: tokens.spacing.lg,
-        boxSizing: "border-box"
-      }}
-    >
-      <header style={{ marginBottom: tokens.spacing.lg }}>
-        <h1 style={{ margin: 0, fontSize: tokens.typography.fontSizeLg, color: tokens.colors.textPrimary, fontWeight: tokens.typography.fontWeightBold }}>
-          Sources
+    <div style={{ backgroundColor: "transparent", color: tokens.colors.textPrimary, fontFamily: tokens.typography.fontFamilySans, minHeight: "100%", display: "flex", flexDirection: "column", gap: tokens.spacing.lg }}>
+      <div>
+        <h1 style={{ margin: 0, fontSize: tokens.typography.fontSizeXl, color: tokens.colors.textPrimary, fontWeight: tokens.typography.fontWeightBold }}>
+          Sources Registry & Credentials Manager
         </h1>
         <p style={{ margin: "4px 0 0 0", color: tokens.colors.textMuted, fontSize: tokens.typography.fontSizeSm }}>
-          Data source registry, API key management, and adapter configuration.
+          Overview of all 41 data source definitions, credential status, and ingestion parameters.
         </p>
-      </header>
-      <StateBanner state="NOT_CONNECTED" reason="Sources module is not yet connected. Source registry management UI is pending." />
-      <Panel title="SOURCE REGISTRY">
-        <p style={{ color: tokens.colors.textMuted, fontSize: tokens.typography.fontSizeSm, margin: 0 }}>
-          This module is under development. Full source registry with adapter status, API key configuration, and ingestion history will appear here. See the Health page for current source status.
-        </p>
+      </div>
+
+      <Panel title="ALL REGISTERED DATA SOURCES">
+        <DataTable data={sources} columns={columns} keyExtractor={(r) => r.source_id} />
       </Panel>
     </div>
   );

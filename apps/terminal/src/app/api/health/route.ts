@@ -2,31 +2,41 @@ import { NextResponse } from "next/server";
 import { SourceRegistry } from "@meridian/registry";
 import { AdapterRunner } from "@meridian/engine";
 
-// Singleton runner instance for API health board state
 const globalRegistry = new SourceRegistry();
 const globalRunner = new AdapterRunner(globalRegistry);
-
-// Pre-warm real adapters with configured keys
-const MOCK_API_KEYS = {
-  fred: "MOCK_FRED_API_KEY",
-  twelve_data: "MOCK_TWELVE_DATA_KEY",
-  sec_edgar: "NONE_REQUIRED",
-  usaspending: "NONE_REQUIRED",
-  kalshi: "MOCK_KALSHI_KEY",
-  gdelt: "NONE_REQUIRED"
-};
 
 let initialized = false;
 
 async function prewarmHealthState() {
   if (!initialized) {
     initialized = true;
-    await globalRunner.runAdapter("fred", MOCK_API_KEYS);
-    await globalRunner.runAdapter("twelve_data", MOCK_API_KEYS);
-    await globalRunner.runAdapter("sec_edgar", MOCK_API_KEYS);
-    await globalRunner.runAdapter("usaspending", MOCK_API_KEYS);
-    await globalRunner.runAdapter("kalshi", MOCK_API_KEYS);
-    await globalRunner.runAdapter("gdelt", MOCK_API_KEYS);
+
+    const envKeys: Record<string, string> = {
+      fred: process.env.FRED_API_KEY || "",
+      twelve_data: process.env.TWELVE_DATA_API_KEY || "",
+      finnhub: process.env.FINNHUB_API_KEY || "",
+      eia: process.env.EIA_API_KEY || "",
+      sec_edgar: process.env.SEC_EDGAR_USER_AGENT || "MERIDIAN petecurrey@googlemail.com",
+      usaspending: "NONE_REQUIRED",
+      kalshi: process.env.KALSHI_API_KEY || "",
+      gdelt: "NONE_REQUIRED",
+      us_treasury_fiscal: "NONE_REQUIRED",
+      ny_fed: "NONE_REQUIRED",
+      atlanta_fed_gdpnow: "NONE_REQUIRED",
+      cleveland_fed_nowcast: "NONE_REQUIRED",
+      coingecko: process.env.COINGECKO_API_KEY || "",
+      defillama: "NONE_REQUIRED",
+      polymarket: "NONE_REQUIRED"
+    };
+
+    const runList = ["fred", "twelve_data", "finnhub", "sec_edgar", "usaspending", "kalshi", "gdelt", "coingecko", "defillama", "polymarket"];
+    for (const src of runList) {
+      try {
+        await globalRunner.runAdapter(src, envKeys);
+      } catch (err) {
+        console.error(`Adapter run error for ${src}:`, err);
+      }
+    }
   }
 }
 
@@ -45,7 +55,7 @@ export async function GET() {
       name: source.name,
       pillar: source.pillar,
       cadence: source.cadence,
-      staleness_sla_seconds: source.sla_seconds,
+      sla_seconds: source.sla_seconds,
       status: status,
       last_successful_fetch: health?.last_successful_fetch || null,
       error_rate_24h: health?.error_rate_24h || 0.0,
@@ -60,6 +70,8 @@ export async function GET() {
   return NextResponse.json({
     timestamp: new Date().toISOString(),
     total_sources: combinedBoard.length,
+    healthy_count: combinedBoard.filter(s => s.status === "HEALTHY").length,
     sources: combinedBoard
   });
 }
+

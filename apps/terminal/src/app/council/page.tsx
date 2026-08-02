@@ -3,32 +3,36 @@
 import React, { useState } from "react";
 import { tokens, Panel, DataTable, Column } from "@meridian/ui";
 
-interface ModelResponseCard {
-  model_id: string;
-  model_name: string;
-  provider: string;
-  confidence: number;
-  raw_response: string;
-  cited_observation_ids: string[];
-}
-
-interface DisagreementMatrixRow {
-  id: string;
-  topic: string;
-  model_a_stance: string;
-  model_b_stance: string;
-  variance_pct: number;
-}
-
 export default function CouncilPage() {
   const [isDeliberating, setIsDeliberating] = useState(false);
+  const [deliberation, setDeliberation] = useState<any>(null);
+  const [topicInput, setTopicInput] = useState("Fed Rate Cut Timing & Urgency");
 
-  const modelResponses: ModelResponseCard[] = [
+  const handleTriggerDeliberation = async () => {
+    try {
+      setIsDeliberating(true);
+      const res = await fetch("/api/council", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic: topicInput })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setDeliberation(data);
+      }
+    } catch (e) {
+      console.error("Deliberation error:", e);
+    } finally {
+      setIsDeliberating(false);
+    }
+  };
+
+  const modelResponses = deliberation?.model_responses || [
     {
       model_id: "claude-3-5-sonnet",
       model_name: "Claude 3.5 Sonnet",
       provider: "Anthropic",
-      confidence: 88,
+      confidence: 94,
       raw_response: "Analysis based on obs-gdp-001: The divergence between prediction markets and Fed funds rate path signals a potential repricing event in interest rate futures.",
       cited_observation_ids: ["obs-gdp-001"]
     },
@@ -58,31 +62,22 @@ export default function CouncilPage() {
     }
   ];
 
-  const disagreements: DisagreementMatrixRow[] = [
+  const disagreements = deliberation?.disagreement_matrix || [
     {
-      id: "disag-001",
       topic: "Fed Rate Cut Timing & Urgency",
-      model_a_stance: "Claude 3.5: Elevated repricing risk in interest rate futures.",
-      model_b_stance: "Gemini 1.5: Rates higher for longer; prediction cuts over-optimistic.",
+      model_a: { model_id: "claude-3-5-sonnet", stance: "Elevated repricing risk in interest rate futures." },
+      model_b: { model_id: "gemini-1-5-pro", stance: "Rates higher for longer; prediction cuts over-optimistic." },
       variance_pct: 22.5
     },
     {
-      id: "disag-002",
       topic: "Prediction Market Arbitrage",
-      model_a_stance: "DeepSeek R1: 29.41% divergence offers statistical arbitrage.",
-      model_b_stance: "Llama 3.3: Divergence is liquidity noise; risk premium accurate.",
+      model_a: { model_id: "deepseek-r1", stance: "29.41% divergence offers statistical arbitrage." },
+      model_b: { model_id: "llama-3-3-70b", stance: "Divergence is liquidity noise; risk premium accurate." },
       variance_pct: 18.0
     }
   ];
 
-  const handleTriggerDeliberation = () => {
-    setIsDeliberating(true);
-    setTimeout(() => {
-      setIsDeliberating(false);
-    }, 1200);
-  };
-
-  const disagreementColumns: Column<DisagreementMatrixRow>[] = [
+  const disagreementColumns: Column<any>[] = [
     {
       key: "topic",
       header: "DELIBERATION TOPIC",
@@ -91,19 +86,19 @@ export default function CouncilPage() {
     {
       key: "model_a",
       header: "MODEL A STANCE",
-      render: (row) => <span style={{ color: tokens.colors.accentGreen }}>{row.model_a_stance}</span>
+      render: (row) => <span style={{ color: tokens.colors.accentGreen, fontSize: tokens.typography.fontSizeXs }}>{row.model_a?.stance || row.model_a_stance}</span>
     },
     {
       key: "model_b",
       header: "MODEL B STANCE",
-      render: (row) => <span style={{ color: tokens.colors.warningAmber }}>{row.model_b_stance}</span>
+      render: (row) => <span style={{ color: "#b45309", fontSize: tokens.typography.fontSizeXs }}>{row.model_b?.stance || row.model_b_stance}</span>
     },
     {
       key: "variance",
       header: "VARIANCE",
       render: (row) => (
-        <span style={{ color: tokens.colors.offlineRed, fontWeight: tokens.typography.fontWeightBold }}>
-          {row.variance_pct.toFixed(1)}%
+        <span style={{ color: "#dc2626", fontWeight: tokens.typography.fontWeightBold, fontFamily: tokens.typography.fontFamilyMono }}>
+          {row.variance_pct?.toFixed(1) || "0.0"}%
         </span>
       )
     }
@@ -112,82 +107,89 @@ export default function CouncilPage() {
   return (
     <div
       style={{
-        backgroundColor: tokens.colors.bg,
+        backgroundColor: "transparent",
         color: tokens.colors.textPrimary,
-        fontFamily: tokens.typography.fontFamilyMono,
+        fontFamily: tokens.typography.fontFamilySans,
         minHeight: "100%",
-        padding: tokens.spacing.lg,
-        boxSizing: "border-box"
+        display: "flex",
+        flexDirection: "column",
+        gap: tokens.spacing.lg
       }}
     >
-      {/* Header & Trigger Control */}
-      <header
-        style={{
-          marginBottom: tokens.spacing.lg,
-          borderBottom: `1px solid ${tokens.colors.borderHairline}`,
-          paddingBottom: tokens.spacing.md,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center"
-        }}
-      >
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: tokens.typography.fontSizeLg, color: tokens.colors.accentGreen }}>
-            THE COUNCIL // MULTI-MODEL DELIBERATION ROOM
+          <h1 style={{ margin: 0, fontSize: tokens.typography.fontSizeXl, color: tokens.colors.textPrimary, fontWeight: tokens.typography.fontWeightBold }}>
+            The Council Room
           </h1>
           <p style={{ margin: "4px 0 0 0", color: tokens.colors.textMuted, fontSize: tokens.typography.fontSizeSm }}>
-            Independent Deliberation across Claude 3.5, Gemini 1.5, DeepSeek R1, and Llama 3.3 70B
+            Multi-model LLM consensus engine across Claude 3.5, Gemini 1.5, DeepSeek R1, and Llama 3.3.
           </p>
         </div>
 
-        <button
-          onClick={handleTriggerDeliberation}
-          disabled={isDeliberating}
-          style={{
-            padding: "10px 20px",
-            backgroundColor: tokens.colors.accentGreen,
-            color: "#000",
-            fontWeight: tokens.typography.fontWeightBold,
-            fontSize: tokens.typography.fontSizeSm,
-            fontFamily: tokens.typography.fontFamilyMono,
-            border: "none",
-            cursor: "pointer"
-          }}
-        >
-          {isDeliberating ? "[DELIBERATING ACROSS LLMs...]" : "TRIGGER COUNCIL DELIBERATION"}
-        </button>
-      </header>
+        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+          <input
+            type="text"
+            value={topicInput}
+            onChange={(e) => setTopicInput(e.target.value)}
+            placeholder="Deliberation topic..."
+            style={{
+              padding: "8px 12px",
+              borderRadius: "4px",
+              border: `1px solid ${tokens.colors.borderHairline}`,
+              fontSize: tokens.typography.fontSizeSm,
+              width: "240px"
+            }}
+          />
 
-      {/* Consensus Summary Banner */}
-      <Panel title="COMPOSITE CONSENSUS SYNTHESIS (ACTIONABILITY SCORE: 86/100)">
-        <div style={{ display: "flex", flexDirection: "column", gap: tokens.spacing.sm }}>
-          <div style={{ color: tokens.colors.accentGreen, fontWeight: tokens.typography.fontWeightBold }}>
-            ✓ WHERE MODELS AGREE: All 4 models agree that prediction market odds (Polymarket 68% vs Kalshi 48%) diverge significantly from historical macro indicators. All models cite observation obs-gdp-001.
-          </div>
-          <div style={{ color: tokens.colors.warningAmber, fontWeight: tokens.typography.fontWeightBold }}>
-            ⚡ WHERE MODELS DISAGREE: Claude 3.5 Sonnet and DeepSeek R1 see actionable repricing and arbitrage opportunities, whereas Gemini 1.5 Pro and Llama 3.3 70B view the divergence as noise, expecting Fed policy to remain higher for longer.
-          </div>
+          <button
+            onClick={handleTriggerDeliberation}
+            disabled={isDeliberating}
+            style={{
+              padding: "8px 16px",
+              backgroundColor: tokens.colors.accentGreen,
+              color: "#ffffff",
+              border: "none",
+              borderRadius: "4px",
+              fontSize: tokens.typography.fontSizeXs,
+              fontWeight: tokens.typography.fontWeightMedium,
+              cursor: "pointer"
+            }}
+          >
+            {isDeliberating ? "Deliberating across LLMs..." : "⚡ Execute Multi-LLM Deliberation"}
+          </button>
         </div>
-      </Panel>
+      </div>
+
+      {/* Consensus Summary */}
+      <div style={{ padding: tokens.spacing.md, backgroundColor: tokens.colors.panelBg, border: `1px solid ${tokens.colors.borderHairline}`, borderRadius: "6px" }}>
+        <div style={{ fontSize: tokens.typography.fontSizeXs, fontWeight: tokens.typography.fontWeightBold, color: tokens.colors.textMuted, letterSpacing: "0.05em", marginBottom: "6px" }}>
+          COMPOSITE CONSENSUS SYNTHESIS (ACTIONABILITY SCORE: {deliberation?.actionability_score || 86}/100)
+        </div>
+        <div style={{ fontSize: tokens.typography.fontSizeSm, color: tokens.colors.textPrimary, lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
+          {deliberation?.consensus_summary || "All 4 models agree that prediction market odds (Polymarket 68% vs Kalshi 48%) diverge significantly from historical macro indicators. Claude 3.5 Sonnet and DeepSeek R1 see actionable repricing, whereas Gemini 1.5 Pro and Llama 3.3 view it as liquidity noise."}
+        </div>
+      </div>
 
       {/* Disagreement Matrix */}
-      <Panel title="DISAGREEMENT MATRIX (CROSS-MODEL STANCE VARIANCE)">
+      <Panel title="CROSS-MODEL DISAGREEMENT MATRIX">
         <DataTable
           data={disagreements}
           columns={disagreementColumns}
-          keyExtractor={(row) => row.id}
+          keyExtractor={(row) => row.topic || String(Math.random())}
         />
       </Panel>
 
-      {/* Side-by-Side Model Comparison Cards */}
+      {/* 4 Model Response Cards */}
       <Panel title="INDEPENDENT MODEL RESPONSES (4 MODELS SIDE-BY-SIDE)">
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: tokens.spacing.md }}>
-          {modelResponses.map((m) => (
+          {modelResponses.map((m: any) => (
             <div
               key={m.model_id}
               style={{
-                backgroundColor: tokens.colors.bg,
+                backgroundColor: tokens.colors.panelBg,
                 border: `1px solid ${tokens.colors.borderHairline}`,
+                borderRadius: "6px",
                 padding: tokens.spacing.md,
                 display: "flex",
                 flexDirection: "column",
@@ -196,30 +198,32 @@ export default function CouncilPage() {
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontWeight: tokens.typography.fontWeightBold, color: tokens.colors.accentGreen }}>
-                  {m.model_name} ({m.provider})
+                  {m.model_name} <span style={{ fontWeight: tokens.typography.fontWeightRegular, color: tokens.colors.textMuted }}>({m.provider})</span>
                 </span>
-                <span style={{ fontSize: tokens.typography.fontSizeXs, color: tokens.colors.textMuted }}>
+                <span style={{ fontSize: tokens.typography.fontSizeXs, fontFamily: tokens.typography.fontFamilyMono, color: tokens.colors.textMuted }}>
                   CONFIDENCE: {m.confidence}%
                 </span>
               </div>
 
-              <p style={{ margin: "4px 0", fontSize: tokens.typography.fontSizeSm, color: tokens.colors.textPrimary }}>
+              <p style={{ margin: "6px 0", fontSize: tokens.typography.fontSizeSm, color: tokens.colors.textPrimary, lineHeight: 1.4 }}>
                 "{m.raw_response}"
               </p>
 
-              <div style={{ display: "flex", gap: "4px", marginTop: "4px" }}>
-                {m.cited_observation_ids.map((obsId) => (
+              <div style={{ display: "flex", gap: "4px" }}>
+                {m.cited_observation_ids?.map((obsId: string) => (
                   <span
                     key={obsId}
                     style={{
-                      fontSize: "9px",
+                      fontSize: "10px",
+                      fontFamily: tokens.typography.fontFamilyMono,
                       color: tokens.colors.accentGreen,
-                      backgroundColor: `${tokens.colors.accentGreen}15`,
+                      backgroundColor: "#f0fdf4",
                       padding: "2px 6px",
-                      border: `1px solid ${tokens.colors.accentGreen}`
+                      borderRadius: "4px",
+                      border: "1px solid #bbf7d0"
                     }}
                   >
-                    [CIT: {obsId}]
+                    CIT: {obsId}
                   </span>
                 ))}
               </div>
