@@ -4,8 +4,9 @@ import React from "react";
 import { tokens, Panel, Value, SourceBadge, PillarTag } from "@meridian/ui";
 import { Pillar } from "@meridian/core";
 
-export default function EntityDossierPage({ params }: { params: { id: string } }) {
-  const entityId = params?.id || "e-apex-tech-001";
+export default function EntityDossierPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = React.use(params);
+  const entityId = id || "e-apex-tech-001";
 
   // Mock observations for Apex Tech Inc (CIK: 0001234567, LEI: 5493001KJ9572B569811)
   const observations = [
