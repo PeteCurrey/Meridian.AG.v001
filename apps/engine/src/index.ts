@@ -1,3 +1,4 @@
+export { AdapterRunner } from "./runner";
 import { SourceRegistry } from "@meridian/registry";
 
 console.log("[MERIDIAN Engine] Starting engine process...");

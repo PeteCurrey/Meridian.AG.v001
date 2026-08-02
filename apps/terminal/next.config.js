@@ -5,6 +5,7 @@ const nextConfig = {
     "@meridian/core",
     "@meridian/ui",
     "@meridian/registry",
+    "@meridian/engine",
     "@meridian/resolve",
     "@meridian/edge",
     "@meridian/brief",

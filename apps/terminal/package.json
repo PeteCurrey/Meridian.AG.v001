@@ -11,6 +11,8 @@
   "dependencies": {
     "@meridian/core": "workspace:*",
     "@meridian/ui": "workspace:*",
+    "@meridian/registry": "workspace:*",
+    "@meridian/engine": "workspace:*",
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

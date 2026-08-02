@@ -49,6 +49,12 @@ importers:
       '@meridian/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@meridian/engine':
+        specifier: workspace:*
+        version: link:../engine
+      '@meridian/registry':
+        specifier: workspace:*
+        version: link:../../packages/registry
       '@meridian/ui':
         specifier: workspace:*
         version: link:../../packages/ui
