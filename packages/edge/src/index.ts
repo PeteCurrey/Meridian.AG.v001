@@ -1,16 +1,16 @@
-export * from "./detectors/delta.ts";
-export * from "./detectors/disagreement.ts";
-export * from "./detectors/anomaly.ts";
-export * from "./detectors/absence.ts";
-export * from "./salience.ts";
+export * from "./detectors/delta";
+export * from "./detectors/disagreement";
+export * from "./detectors/anomaly";
+export * from "./detectors/absence";
+export * from "./salience";
 
-import { DeltaDetector } from "./detectors/delta.ts";
-import { DisagreementDetector } from "./detectors/disagreement.ts";
-import { AnomalyDetector } from "./detectors/anomaly.ts";
-import { AbsenceDetector } from "./detectors/absence.ts";
-import { SalienceEngine } from "./salience.ts";
-import type { BookContext } from "./salience.ts";
-import type { Observation, Signal } from "../../core/src/index.ts";
+import { DeltaDetector } from "./detectors/delta";
+import { DisagreementDetector } from "./detectors/disagreement";
+import { AnomalyDetector } from "./detectors/anomaly";
+import { AbsenceDetector } from "./detectors/absence";
+import { SalienceEngine } from "./salience";
+import type { BookContext } from "./salience";
+import type { Observation, Signal } from "../../core/src/index";
 
 export class EdgeEngine {
   private readonly deltaDetector = new DeltaDetector();

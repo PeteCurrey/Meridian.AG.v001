@@ -1,4 +1,4 @@
-import type { CouncilModelProvider, PromptContext, ModelResponse } from "./provider_interface.ts";
+import type { CouncilModelProvider, PromptContext, ModelResponse } from "./provider_interface";
 
 export class DeepSeekProvider implements CouncilModelProvider {
   public readonly id = "deepseek-r1";

@@ -1,9 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { SourceRegistry } from "../../../packages/registry/src/index.ts";
-import { AdapterRunner } from "./runner.ts";
-import { IdempotentBackfillEngine } from "../../scheduler/src/backfill.ts";
-import { SourceHealthStatus } from "../../../packages/core/src/index.ts";
+import { SourceRegistry } from "../../../packages/registry/src/index";
+import { AdapterRunner } from "./runner";
+import { IdempotentBackfillEngine } from "../../scheduler/src/backfill";
+import { SourceHealthStatus } from "../../../packages/core/src/index";
 
 test("AdapterRunner runs all 5 real adapters + 6th GDELT adapter successfully", async () => {
   const registry = new SourceRegistry();

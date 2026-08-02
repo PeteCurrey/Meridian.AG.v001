@@ -1,5 +1,5 @@
-import { SignalType, SignalSeverity, SignalStatus, Pillar } from "../../../core/src/index.ts";
-import type { Signal, Observation } from "../../../core/src/index.ts";
+import { SignalType, SignalSeverity, SignalStatus, Pillar } from "../../../core/src/index";
+import type { Signal, Observation } from "../../../core/src/index";
 
 export class AnomalyDetector {
   public detect(obs: Observation, mean: number, stddev: number): Signal | null {

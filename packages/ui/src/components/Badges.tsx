@@ -1,5 +1,5 @@
 import React from "react";
-import { tokens } from "../tokens.ts";
+import { tokens } from "../tokens";
 import { Pillar } from "@meridian/core";
 
 export interface SourceBadgeProps {

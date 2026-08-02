@@ -1,4 +1,4 @@
-import { Pillar } from "./source.ts";
+import { Pillar } from "./source";
 
 export enum SignalType {
   DELTA = "DELTA",

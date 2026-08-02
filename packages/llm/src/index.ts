@@ -1,3 +1,3 @@
-export * from "./schemas.ts";
-export * from "./client.ts";
-export * from "./entity_synthesis.ts";
+export * from "./schemas";
+export * from "./client";
+export * from "./entity_synthesis";

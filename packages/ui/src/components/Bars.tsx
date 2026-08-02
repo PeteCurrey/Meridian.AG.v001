@@ -1,5 +1,5 @@
 import React from "react";
-import { tokens } from "../tokens.ts";
+import { tokens } from "../tokens";
 
 export interface ConfidenceBarProps {
   readonly score: number; // 0-100

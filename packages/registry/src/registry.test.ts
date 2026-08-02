@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { SourceRegistry } from "./index.ts";
-import { Pillar } from "../../core/src/source.ts";
+import { SourceRegistry } from "./index";
+import { Pillar } from "../../core/src/source";
 
 test("SourceRegistry loads all ~18 Wave 1 sources", () => {
   const registry = new SourceRegistry();

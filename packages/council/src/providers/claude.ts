@@ -1,4 +1,4 @@
-import type { CouncilModelProvider, PromptContext, ModelResponse } from "./provider_interface.ts";
+import type { CouncilModelProvider, PromptContext, ModelResponse } from "./provider_interface";
 
 export class ClaudeProvider implements CouncilModelProvider {
   public readonly id = "claude-3-5-sonnet";

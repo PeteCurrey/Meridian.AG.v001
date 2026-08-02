@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useState } from "react";
-import { tokens } from "../tokens.ts";
+import { tokens } from "../tokens";
 
 export interface Column<T> {
   readonly key: string;

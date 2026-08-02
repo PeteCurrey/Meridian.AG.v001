@@ -1,7 +1,7 @@
-import { Pillar } from "../../core/src/index.ts";
-import type { Signal, Observation, BookThesis, BookQuestion } from "../../core/src/index.ts";
-import { LLMClient } from "../../llm/src/index.ts";
-import type { LLMBriefOutput } from "../../llm/src/index.ts";
+import { Pillar } from "../../core/src/index";
+import type { Signal, Observation, BookThesis, BookQuestion } from "../../core/src/index";
+import { LLMClient } from "../../llm/src/index";
+import type { LLMBriefOutput } from "../../llm/src/index";
 
 export interface CitationRef {
   readonly ref_id: string; // observation_id or signal_id

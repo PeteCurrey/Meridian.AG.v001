@@ -1,5 +1,5 @@
-import { ok, err } from "./result.ts";
-import type { Result } from "./result.ts";
+import { ok, err } from "./result";
+import type { Result } from "./result";
 
 export enum AutomationTier {
   TIER_0_MANUAL = "TIER_0_MANUAL",

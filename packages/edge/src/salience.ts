@@ -1,5 +1,5 @@
-import { SignalSeverity } from "../../core/src/index.ts";
-import type { Signal } from "../../core/src/index.ts";
+import { SignalSeverity } from "../../core/src/index";
+import type { Signal } from "../../core/src/index";
 
 export interface BookContext {
   readonly watchlist_entity_ids: readonly string[];

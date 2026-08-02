@@ -1,7 +1,7 @@
-import { ok, err, Pillar, LicenceClass } from "../../../core/src/index.ts";
-import type { Result, Observation, ScaledInteger } from "../../../core/src/index.ts";
-import type { Adapter, AdapterConfig, AdapterFetchResult } from "../adapter_interface.ts";
-import { R2StorageClient } from "../storage.ts";
+import { ok, err, Pillar, LicenceClass } from "../../../core/src/index";
+import type { Result, Observation, ScaledInteger } from "../../../core/src/index";
+import type { Adapter, AdapterConfig, AdapterFetchResult } from "../adapter_interface";
+import { R2StorageClient } from "../storage";
 
 export class TwelveDataAdapter implements Adapter {
   public readonly id = "twelve_data";

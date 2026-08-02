@@ -1,5 +1,5 @@
-import { Pillar, LicenceClass } from "../../core/src/index.ts";
-import type { Result, Observation, RawPayload } from "../../core/src/index.ts";
+import { Pillar, LicenceClass } from "../../core/src/index";
+import type { Result, Observation, RawPayload } from "../../core/src/index";
 
 export interface AdapterConfig {
   readonly source_id: string;

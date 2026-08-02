@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createMoney, MoneyHelpers } from "./money.ts";
+import { createMoney, MoneyHelpers } from "./money";
 
 test("Money constructed with bigint scaled integer works properly", () => {
   const m1 = createMoney(1000n, "USD", 2); // $10.00

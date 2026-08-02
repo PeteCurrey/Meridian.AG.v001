@@ -3,10 +3,10 @@ import {
   err,
   AutomationTier,
   requireAutomationTier
-} from "../../../packages/core/src/index.ts";
-import type { Result, PlatformState } from "../../../packages/core/src/index.ts";
-import { SourceRegistry } from "../../../packages/registry/src/index.ts";
-import { AdapterRunner } from "../../engine/src/runner.ts";
+} from "../../../packages/core/src/index";
+import type { Result, PlatformState } from "../../../packages/core/src/index";
+import { SourceRegistry } from "../../../packages/registry/src/index";
+import { AdapterRunner } from "../../engine/src/runner";
 
 export interface AuditLogEntry {
   readonly id: string;

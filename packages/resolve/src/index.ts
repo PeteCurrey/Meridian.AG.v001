@@ -3,14 +3,14 @@ import {
   IdentifierScheme,
   ok,
   err
-} from "../../core/src/index.ts";
+} from "../../core/src/index";
 import type {
   Entity,
   EntityIdentifier,
   MergeAuditRecord,
   MergeProposal,
   Result
-} from "../../core/src/index.ts";
+} from "../../core/src/index";
 
 export interface ResolutionRule {
   readonly id: string;

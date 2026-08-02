@@ -1,14 +1,14 @@
-export * from "./providers/provider_interface.ts";
-export * from "./providers/claude.ts";
-export * from "./providers/gemini.ts";
-export * from "./providers/deepseek.ts";
-export * from "./providers/llama.ts";
+export * from "./providers/provider_interface";
+export * from "./providers/claude";
+export * from "./providers/gemini";
+export * from "./providers/deepseek";
+export * from "./providers/llama";
 
-import { ClaudeProvider } from "./providers/claude.ts";
-import { GeminiProvider } from "./providers/gemini.ts";
-import { DeepSeekProvider } from "./providers/deepseek.ts";
-import { LlamaProvider } from "./providers/llama.ts";
-import type { CouncilModelProvider, PromptContext, ModelResponse } from "./providers/provider_interface.ts";
+import { ClaudeProvider } from "./providers/claude";
+import { GeminiProvider } from "./providers/gemini";
+import { DeepSeekProvider } from "./providers/deepseek";
+import { LlamaProvider } from "./providers/llama";
+import type { CouncilModelProvider, PromptContext, ModelResponse } from "./providers/provider_interface";
 
 export interface DisagreementPoint {
   readonly topic: string;

@@ -1,4 +1,4 @@
-import type { CouncilModelProvider, PromptContext, ModelResponse } from "./provider_interface.ts";
+import type { CouncilModelProvider, PromptContext, ModelResponse } from "./provider_interface";
 
 export class LlamaProvider implements CouncilModelProvider {
   public readonly id = "llama-3-3-70b";

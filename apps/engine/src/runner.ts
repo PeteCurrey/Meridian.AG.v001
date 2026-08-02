@@ -2,16 +2,16 @@ import {
   ok,
   err,
   SourceHealthStatus
-} from "../../../packages/core/src/index.ts";
+} from "../../../packages/core/src/index";
 import type {
   Result,
   Observation,
   SourceHealth
-} from "../../../packages/core/src/index.ts";
-import { SourceRegistry } from "../../../packages/registry/src/index.ts";
-import type { SourceRegistryEntry } from "../../../packages/registry/src/index.ts";
-import { AdapterFactory } from "../../../packages/adapters/src/index.ts";
-import type { AdapterConfig } from "../../../packages/adapters/src/index.ts";
+} from "../../../packages/core/src/index";
+import { SourceRegistry } from "../../../packages/registry/src/index";
+import type { SourceRegistryEntry } from "../../../packages/registry/src/index";
+import { AdapterFactory } from "../../../packages/adapters/src/index";
+import type { AdapterConfig } from "../../../packages/adapters/src/index";
 
 export interface RunnerExecutionResult {
   readonly source_id: string;

@@ -1,4 +1,4 @@
-import { Pillar, LicenceClass } from "../../core/src/index.ts";
+import { Pillar, LicenceClass } from "../../core/src/index";
 
 export interface SourceDefinition {
   readonly id: string;

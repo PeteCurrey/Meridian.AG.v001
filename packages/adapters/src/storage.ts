@@ -1,4 +1,4 @@
-import type { RawPayload } from "../../core/src/index.ts";
+import type { RawPayload } from "../../core/src/index";
 
 export interface StorageProvider {
   putRawPayload(sourceId: string, payload: Buffer | string, contentType?: string): Promise<RawPayload>;

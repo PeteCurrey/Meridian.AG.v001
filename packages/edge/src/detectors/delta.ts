@@ -1,5 +1,5 @@
-import { SignalType, SignalSeverity, SignalStatus, Pillar, getCanonicalMetric } from "../../../core/src/index.ts";
-import type { Signal, Observation } from "../../../core/src/index.ts";
+import { SignalType, SignalSeverity, SignalStatus, Pillar, getCanonicalMetric } from "../../../core/src/index";
+import type { Signal, Observation } from "../../../core/src/index";
 
 export class DeltaDetector {
   public detect(curr: Observation, prev: Observation | null): Signal | null {

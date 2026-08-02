@@ -1,5 +1,5 @@
-import { SignalType, SignalSeverity, SignalStatus, Pillar } from "../../../core/src/index.ts";
-import type { Signal } from "../../../core/src/index.ts";
+import { SignalType, SignalSeverity, SignalStatus, Pillar } from "../../../core/src/index";
+import type { Signal } from "../../../core/src/index";
 
 export class AbsenceDetector {
   public detect(

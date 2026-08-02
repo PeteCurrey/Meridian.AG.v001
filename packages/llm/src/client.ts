@@ -1,7 +1,7 @@
-import { SchemaValidator } from "./schemas.ts";
-import type { LLMBriefOutput, LLMEntityProfileOutput } from "./schemas.ts";
-import type { Result } from "../../core/src/index.ts";
-import { ok, err } from "../../core/src/index.ts";
+import { SchemaValidator } from "./schemas";
+import type { LLMBriefOutput, LLMEntityProfileOutput } from "./schemas";
+import type { Result } from "../../core/src/index";
+import { ok, err } from "../../core/src/index";
 
 export const SYSTEM_GROUNDING_PROMPT =
   "You are an analytical engine. You MAY NOT assert any fact, figure, or relationship that is not present in the provided context. Every claim must cite its observation ID. If information is missing, state clearly that data is missing.";

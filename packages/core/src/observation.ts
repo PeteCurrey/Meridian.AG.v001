@@ -1,5 +1,5 @@
-import { Pillar, LicenceClass } from "./source.ts";
-import type { ScaledInteger } from "./money.ts";
+import { Pillar, LicenceClass } from "./source";
+import type { ScaledInteger } from "./money";
 
 export interface Observation {
   readonly id: string;

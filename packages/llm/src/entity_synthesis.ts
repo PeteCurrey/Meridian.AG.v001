@@ -1,6 +1,6 @@
-import { LLMClient } from "./client.ts";
-import type { LLMEntityProfileOutput } from "./schemas.ts";
-import type { Result, Observation } from "../../core/src/index.ts";
+import { LLMClient } from "./client";
+import type { LLMEntityProfileOutput } from "./schemas";
+import type { Result, Observation } from "../../core/src/index";
 
 export class EntityProfileSynthesizer {
   private readonly llmClient: LLMClient;

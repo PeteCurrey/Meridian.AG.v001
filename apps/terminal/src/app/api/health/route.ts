@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { SourceRegistry } from "@meridian/registry";
-import { AdapterRunner } from "../../../../../engine/src/runner.ts";
+import { AdapterRunner } from "../../../../../engine/src/runner";
 
 // Singleton runner instance for API health board state
 const globalRegistry = new SourceRegistry();
