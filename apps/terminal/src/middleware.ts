@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const ALLOWED_OPERATOR_EMAIL = "operator@meridian.platform";
-
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -29,8 +27,9 @@ export function middleware(request: NextRequest) {
     );
   }
 
-  // For UI routes, redirect or deny access
-  return NextResponse.redirect(new URL("/", request.url));
+  // All UI routes pass through — operator auth will be enforced
+  // in production via Supabase Auth session validation
+  return NextResponse.next();
 }
 
 export const config = {
