@@ -1,5 +1,5 @@
 import React from "react";
-import { TerminalShell } from "../components/TerminalShell.tsx";
+import { TerminalShell } from "../components/TerminalShell.ts";
 
 export const metadata = {
   title: "MERIDIAN Terminal",
