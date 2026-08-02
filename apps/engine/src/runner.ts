@@ -122,7 +122,7 @@ export class AdapterRunner {
     const config: AdapterConfig = {
       source_id: sourceId,
       api_key: apiKey,
-      base_url: entry.base_url
+      base_url: entry.base_url ?? ""
     };
 
     const fetchResult = await adapter.fetch(config);

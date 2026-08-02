@@ -11,7 +11,9 @@ import {
   Panel,
   Column
 } from "@meridian/ui";
-import { WAVE_1_REGISTRY, SourceRegistryEntry } from "@meridian/registry";
+import { SourceRegistry, SourceRegistryEntry } from "@meridian/registry";
+
+const REGISTRY = new SourceRegistry();
 
 export default function HealthBoardPage() {
   const connectedSources = ["fred", "twelve_data", "sec_edgar", "usaspending", "kalshi", "gdelt"];
@@ -45,7 +47,7 @@ export default function HealthBoardPage() {
       key: "sla",
       header: "SLA",
       sortable: true,
-      render: (row) => `${row.staleness_sla_seconds}s`
+      render: (row) => `${row.sla_seconds}s`
     },
     {
       key: "latest_value",
@@ -97,7 +99,7 @@ export default function HealthBoardPage() {
 
       <Panel title="SOURCE HEALTH & PROVENANCE BOARD">
         <DataTable
-          data={WAVE_1_REGISTRY}
+          data={REGISTRY.listAll() as SourceRegistryEntry[]}
           columns={columns}
           keyExtractor={(row) => row.id}
           emptyMessage="No registry sources found."
