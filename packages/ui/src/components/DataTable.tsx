@@ -42,12 +42,12 @@ export function DataTable<T>({
       <div
         style={{
           padding: tokens.spacing.md,
-          fontFamily: tokens.typography.fontFamilyMono,
+          fontFamily: tokens.typography.fontFamilySans,
           fontSize: tokens.typography.fontSizeSm,
           color: tokens.colors.textMuted
         }}
       >
-        [fetching payload...]
+        Fetching payload...
       </div>
     );
   }
@@ -57,24 +57,26 @@ export function DataTable<T>({
       <div
         style={{
           padding: tokens.spacing.md,
-          fontFamily: tokens.typography.fontFamilyMono,
+          fontFamily: tokens.typography.fontFamilySans,
           fontSize: tokens.typography.fontSizeSm,
           color: tokens.colors.textMuted,
-          border: `1px dashed ${tokens.colors.borderHairline}`
+          border: `1px dashed ${tokens.colors.borderHairline}`,
+          borderRadius: "4px",
+          textAlign: "center"
         }}
       >
-        [empty] {emptyMessage}
+        {emptyMessage}
       </div>
     );
   }
 
   return (
-    <div style={{ overflowX: "auto", border: `1px solid ${tokens.colors.borderHairline}` }}>
+    <div style={{ overflowX: "auto" }}>
       <table
         style={{
           width: "100%",
           borderCollapse: "collapse",
-          fontFamily: tokens.typography.fontFamilyMono,
+          fontFamily: tokens.typography.fontFamilySans,
           fontSize: tokens.typography.fontSizeSm,
           textAlign: "left"
         }}
@@ -83,7 +85,7 @@ export function DataTable<T>({
           <tr
             style={{
               backgroundColor: tokens.colors.panelBg,
-              borderBottom: `1px solid ${tokens.colors.borderHairline}`
+              borderBottom: `2px solid ${tokens.colors.borderHairline}`
             }}
           >
             {columns.map(col => (
@@ -91,8 +93,12 @@ export function DataTable<T>({
                 key={col.key}
                 onClick={() => col.sortable && handleSort(col.key)}
                 style={{
-                  padding: "8px 12px",
+                  padding: "12px",
                   color: tokens.colors.textMuted,
+                  fontWeight: tokens.typography.fontWeightMedium,
+                  textTransform: "uppercase",
+                  fontSize: tokens.typography.fontSizeXs,
+                  letterSpacing: "0.05em",
                   cursor: col.sortable ? "pointer" : "default",
                   userSelect: "none"
                 }}
@@ -112,7 +118,7 @@ export function DataTable<T>({
               }}
             >
               {columns.map(col => (
-                <td key={col.key} style={{ padding: "8px 12px" }}>
+                <td key={col.key} style={{ padding: "12px", color: tokens.colors.textPrimary }}>
                   {col.render(row)}
                 </td>
               ))}

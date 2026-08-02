@@ -13,22 +13,23 @@ export const Panel: React.FC<PanelProps> = ({ title, children }) => (
       border: `1px solid ${tokens.colors.borderHairline}`,
       padding: tokens.spacing.md,
       marginBottom: tokens.spacing.md,
-      fontFamily: tokens.typography.fontFamilyMono
+      fontFamily: tokens.typography.fontFamilySans,
+      borderRadius: "4px"
     }}
   >
     {title && (
       <div
         style={{
-          color: tokens.colors.accentGreen,
-          fontSize: tokens.typography.fontSizeXs,
+          color: tokens.colors.textPrimary,
+          fontSize: tokens.typography.fontSizeSm,
           fontWeight: tokens.typography.fontWeightBold,
-          letterSpacing: "0.1em",
-          marginBottom: tokens.spacing.sm,
+          letterSpacing: "0.05em",
+          marginBottom: tokens.spacing.md,
           borderBottom: `1px solid ${tokens.colors.borderHairline}`,
-          paddingBottom: tokens.spacing.xs
+          paddingBottom: tokens.spacing.sm
         }}
       >
-        // {title.toUpperCase()}
+        {title.toUpperCase()}
       </div>
     )}
     {children}
@@ -50,10 +51,10 @@ export const MetricCell: React.FC<MetricCellProps> = ({ label, children }) => (
       display: "flex",
       flexDirection: "column",
       gap: "2px",
-      fontFamily: tokens.typography.fontFamilyMono
+      fontFamily: tokens.typography.fontFamilySans
     }}
   >
-    <span style={{ fontSize: tokens.typography.fontSizeXs, color: tokens.colors.textMuted }}>{label}</span>
-    <span style={{ fontSize: tokens.typography.fontSizeSm, fontWeight: tokens.typography.fontWeightMedium }}>{children}</span>
+    <span style={{ fontSize: tokens.typography.fontSizeXs, color: tokens.colors.textMuted, textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</span>
+    <span style={{ fontSize: tokens.typography.fontSizeMd, fontWeight: tokens.typography.fontWeightBold, color: tokens.colors.textPrimary }}>{children}</span>
   </div>
 );

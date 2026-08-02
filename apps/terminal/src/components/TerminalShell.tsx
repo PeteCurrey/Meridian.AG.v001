@@ -37,14 +37,14 @@ export const TerminalShell: React.FC<TerminalShellProps> = ({
         width: "100vw",
         backgroundColor: tokens.colors.bg,
         color: tokens.colors.textPrimary,
-        fontFamily: tokens.typography.fontFamilyMono,
+        fontFamily: tokens.typography.fontFamilySans,
         overflow: "hidden"
       }}
     >
       {/* 1. Persistent Left Navigation */}
       <nav
         style={{
-          width: "180px",
+          width: "220px",
           backgroundColor: tokens.colors.panelBg,
           borderRight: `1px solid ${tokens.colors.borderHairline}`,
           display: "flex",
@@ -57,15 +57,16 @@ export const TerminalShell: React.FC<TerminalShellProps> = ({
           style={{
             fontSize: tokens.typography.fontSizeMd,
             fontWeight: tokens.typography.fontWeightBold,
-            color: tokens.colors.accentGreen,
-            letterSpacing: "0.2em",
-            marginBottom: tokens.spacing.lg
+            color: tokens.colors.textPrimary,
+            letterSpacing: "0.1em",
+            marginBottom: tokens.spacing.xl,
+            paddingLeft: tokens.spacing.xs
           }}
         >
-          MERIDIAN
+          MERIDIAN <span style={{ fontWeight: tokens.typography.fontWeightRegular, color: tokens.colors.textMuted }}>CENTRE</span>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
           {NAV_ITEMS.map(item => {
             const isActive = activePath === item.path;
 
@@ -74,17 +75,22 @@ export const TerminalShell: React.FC<TerminalShellProps> = ({
                 key={item.id}
                 href={item.path}
                 style={{
-                  color: isActive ? tokens.colors.accentGreen : tokens.colors.textPrimary,
+                  color: isActive ? tokens.colors.accentGreen : tokens.colors.textMuted,
+                  fontWeight: isActive ? tokens.typography.fontWeightMedium : tokens.typography.fontWeightRegular,
                   textDecoration: "none",
                   fontSize: tokens.typography.fontSizeSm,
-                  padding: "6px 8px",
-                  borderRadius: "2px",
-                  backgroundColor: isActive ? `${tokens.colors.accentGreen}15` : "transparent",
-                  borderLeft: isActive ? `2px solid ${tokens.colors.accentGreen}` : "2px solid transparent",
-                  opacity: item.stubbed ? 0.6 : 1
+                  padding: "8px 12px",
+                  borderRadius: "4px",
+                  backgroundColor: isActive ? "#f8fafc" : "transparent",
+                  borderLeft: isActive ? `3px solid ${tokens.colors.accentGreen}` : "3px solid transparent",
+                  opacity: item.stubbed ? 0.6 : 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between"
                 }}
               >
-                {item.label} {item.stubbed ? <span style={{ fontSize: "9px", color: tokens.colors.textMuted }}>[STUB]</span> : ""}
+                <span>{item.label}</span>
+                {item.stubbed ? <span style={{ fontSize: "10px", color: tokens.colors.textMuted, fontFamily: tokens.typography.fontFamilyMono }}>STUB</span> : null}
               </a>
             );
           })}
@@ -92,23 +98,23 @@ export const TerminalShell: React.FC<TerminalShellProps> = ({
       </nav>
 
       {/* 2. Main Content & Top Bar (No Footer) */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", backgroundColor: "#f8fafc" }}>
         {/* Top Bar Header */}
         <header
           style={{
-            height: "48px",
+            height: "56px",
             backgroundColor: tokens.colors.panelBg,
             borderBottom: `1px solid ${tokens.colors.borderHairline}`,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: `0 ${tokens.spacing.md}`,
+            padding: `0 ${tokens.spacing.lg}`,
             boxSizing: "border-box"
           }}
         >
           {/* Global Staleness Indicator */}
           <div style={{ display: "flex", alignItems: "center", gap: tokens.spacing.md }}>
-            <span style={{ fontSize: tokens.typography.fontSizeXs, color: tokens.colors.textMuted }}>STALENESS:</span>
+            <span style={{ fontSize: tokens.typography.fontSizeXs, color: tokens.colors.textMuted, letterSpacing: "0.05em", textTransform: "uppercase" }}>System Status:</span>
             <StalenessBadge status={globalStalenessState} />
             {degradedSourceName && (
               <span style={{ fontSize: tokens.typography.fontSizeXs, color: tokens.colors.warningAmber }}>
@@ -121,10 +127,12 @@ export const TerminalShell: React.FC<TerminalShellProps> = ({
           <div
             style={{
               fontSize: tokens.typography.fontSizeXs,
-              color: tokens.colors.accentGreen,
-              border: `1px solid ${tokens.colors.accentGreen}`,
-              padding: "2px 8px",
-              borderRadius: "2px"
+              color: tokens.colors.textPrimary,
+              border: `1px solid ${tokens.colors.borderHairline}`,
+              backgroundColor: "#f1f5f9",
+              padding: "4px 10px",
+              borderRadius: "12px",
+              fontWeight: tokens.typography.fontWeightMedium
             }}
           >
             AUTOMATION: TIER 1 (WATCH)
@@ -137,7 +145,7 @@ export const TerminalShell: React.FC<TerminalShellProps> = ({
         </header>
 
         {/* Content Area */}
-        <main style={{ flex: 1, overflowY: "auto" }}>{children}</main>
+        <main style={{ flex: 1, overflowY: "auto", padding: tokens.spacing.xl, boxSizing: "border-box" }}>{children}</main>
       </div>
     </div>
   );

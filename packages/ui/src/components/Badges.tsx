@@ -14,10 +14,10 @@ export const SourceBadge: React.FC<SourceBadgeProps> = ({ sourceId, name }) => (
       fontFamily: tokens.typography.fontFamilyMono,
       fontSize: tokens.typography.fontSizeXs,
       color: tokens.colors.accentGreen,
-      backgroundColor: `${tokens.colors.accentGreen}15`,
-      border: `1px solid ${tokens.colors.accentGreen}`,
+      backgroundColor: "#f1f5f9", // subtle slate-100
+      border: `1px solid ${tokens.colors.borderHairline}`,
       padding: "2px 6px",
-      borderRadius: "2px",
+      borderRadius: "4px",
       display: "inline-block"
     }}
   >
@@ -32,9 +32,19 @@ export interface StalenessBadgeProps {
 
 export const StalenessBadge: React.FC<StalenessBadgeProps> = ({ status, slaSeconds }) => {
   let color: string = tokens.colors.accentGreen;
-  if (status === "DEGRADED") color = tokens.colors.warningAmber;
-  if (status === "OFFLINE") color = tokens.colors.offlineRed;
-  if (status === "NOT_CONNECTED") color = tokens.colors.notConnectedGray;
+  let bg = "#f1f5f9";
+  if (status === "DEGRADED") {
+    color = tokens.colors.warningAmber;
+    bg = "#fef3c7";
+  }
+  if (status === "OFFLINE") {
+    color = tokens.colors.offlineRed;
+    bg = "#fee2e2";
+  }
+  if (status === "NOT_CONNECTED") {
+    color = tokens.colors.notConnectedGray;
+    bg = "#f1f5f9";
+  }
 
   return (
     <span
@@ -43,10 +53,10 @@ export const StalenessBadge: React.FC<StalenessBadgeProps> = ({ status, slaSecon
         fontSize: tokens.typography.fontSizeXs,
         fontWeight: tokens.typography.fontWeightBold,
         color,
-        backgroundColor: `${color}18`,
+        backgroundColor: bg,
         border: `1px solid ${color}`,
         padding: "2px 6px",
-        borderRadius: "2px"
+        borderRadius: "4px"
       }}
     >
       {status} {slaSeconds ? `(${slaSeconds}s)` : ""}
@@ -64,9 +74,10 @@ export const PillarTag: React.FC<PillarTagProps> = ({ pillar }) => (
       fontFamily: tokens.typography.fontFamilyMono,
       fontSize: tokens.typography.fontSizeXs,
       color: tokens.colors.textMuted,
+      backgroundColor: "#f8fafc",
       border: `1px solid ${tokens.colors.borderHairline}`,
       padding: "2px 6px",
-      borderRadius: "2px"
+      borderRadius: "4px"
     }}
   >
     {pillar}
@@ -80,17 +91,24 @@ export interface StateBannerProps {
 
 export const StateBanner: React.FC<StateBannerProps> = ({ state, reason }) => {
   let color: string = tokens.colors.warningAmber;
-  if (state === "FEED_OFFLINE") color = tokens.colors.offlineRed;
-  if (state === "NOT_CONNECTED") color = tokens.colors.notConnectedGray;
+  let bg = "#fef3c7";
+  if (state === "FEED_OFFLINE") {
+    color = tokens.colors.offlineRed;
+    bg = "#fee2e2";
+  }
+  if (state === "NOT_CONNECTED") {
+    color = tokens.colors.notConnectedGray;
+    bg = "#f1f5f9";
+  }
 
   return (
     <div
       style={{
-        fontFamily: tokens.typography.fontFamilyMono,
+        fontFamily: tokens.typography.fontFamilySans,
         fontSize: tokens.typography.fontSizeSm,
-        backgroundColor: `${color}10`,
+        backgroundColor: bg,
         border: `1px solid ${color}`,
-        color: color,
+        color: tokens.colors.textPrimary,
         padding: `${tokens.spacing.sm} ${tokens.spacing.md}`,
         borderRadius: "4px",
         marginBottom: tokens.spacing.md,
@@ -99,7 +117,7 @@ export const StateBanner: React.FC<StateBannerProps> = ({ state, reason }) => {
         gap: tokens.spacing.sm
       }}
     >
-      <span style={{ fontWeight: tokens.typography.fontWeightBold }}>[{state}]</span>
+      <span style={{ fontWeight: tokens.typography.fontWeightBold, color, fontFamily: tokens.typography.fontFamilyMono, fontSize: tokens.typography.fontSizeXs }}>[{state}]</span>
       <span>{reason}</span>
     </div>
   );
