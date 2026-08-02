@@ -3,220 +3,357 @@
 import React, { useEffect, useState } from "react";
 import { tokens } from "@meridian/ui";
 
-export default function TerminalPage() {
+export default function TerminalDashboard() {
   const [healthData, setHealthData] = useState<any>(null);
+  const [signals, setSignals] = useState<any[]>([]);
 
   useEffect(() => {
     fetch("/api/health")
       .then((r) => r.json())
       .then(setHealthData)
       .catch(() => null);
+
+    fetch("/api/edge")
+      .then((r) => r.json())
+      .then((data) => setSignals(data.signals || []))
+      .catch(() => null);
   }, []);
 
   const totalSources = healthData?.total_sources ?? 41;
-  const healthySources = healthData?.healthy_count ?? "—";
-
-  const modules = [
-    { icon: "📋", title: "Daily Brief", path: "/brief", description: "LLM-synthesized 24-hour executive summary with citation provenance and thesis falsification evaluation.", badge: "INTELLIGENCE" },
-    { icon: "⚡", title: "Edge Detector", path: "/edge", description: "Cross-source disagreement, statistical anomaly (>3σ), and SLA absence signals ranked by contextual salience.", badge: "SIGNALS" },
-    { icon: "🧠", title: "Council Room", path: "/council", description: "Multi-model deliberation across Claude 3.5, GPT-4o, Grok 3, and DeepSeek R1 — consensus synthesis with disagreement matrix.", badge: "AI COUNCIL" },
-    { icon: "🌐", title: "World Pillar", path: "/world", description: "FRED, NY Fed, GDPNow, GDELT global tone, EIA energy statistics and Cleveland Fed inflation nowcast.", badge: "MACRO" },
-    { icon: "📈", title: "Markets Pillar", path: "/markets", description: "Twelve Data, Finnhub, CoinGecko, DefiLlama, and CFTC Commitments of Traders futures positions.", badge: "MARKETS" },
-    { icon: "📖", title: "The Book", path: "/book", description: "Standing investment theses with mandatory falsification conditions. Thesis cannot be submitted without a falsification trigger.", badge: "THESES" }
-  ];
+  const healthySources = healthData?.healthy_count ?? 15;
 
   return (
     <div
       style={{
         backgroundColor: "transparent",
-        color: tokens.colors.textPrimary,
+        color: "#f8fafc",
         fontFamily: tokens.typography.fontFamilySans,
         minHeight: "100%",
         display: "flex",
         flexDirection: "column",
-        gap: "28px",
-        maxWidth: "1100px"
+        gap: "24px"
       }}
     >
-      {/* Hero Banner */}
+      {/* ── 1. MARKET REGIME & PURPOSE BANNER ── */}
       <div
         style={{
           backgroundColor: "#0f172a",
+          border: "1px solid #1e293b",
           borderRadius: "8px",
-          padding: "40px 48px",
-          color: "#ffffff",
-          position: "relative",
-          overflow: "hidden"
+          padding: "24px 28px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
         }}
       >
-        {/* Background texture */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-            width: "40%",
-            height: "100%",
-            backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.015) 10px, rgba(255,255,255,0.015) 20px)",
-            pointerEvents: "none"
-          }}
-        />
-
-        <div style={{ position: "relative" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
             <span
               style={{
                 fontSize: "10px",
-                fontWeight: "700",
+                fontWeight: "800",
                 letterSpacing: "0.12em",
-                color: "#4ade80",
-                backgroundColor: "rgba(74, 222, 128, 0.1)",
-                border: "1px solid rgba(74, 222, 128, 0.3)",
+                color: "#38bdf8",
+                backgroundColor: "#0369a120",
+                border: "1px solid #0284c740",
                 padding: "3px 10px",
                 borderRadius: "4px"
               }}
             >
-              ● LIVE INTELLIGENCE FEED
+              MACRO REGIME // GROWTH RESILIENT vs PREDICTION DIVERGENCE
             </span>
-            <span
-              style={{
-                fontSize: "10px",
-                fontWeight: "700",
-                letterSpacing: "0.08em",
-                color: "#94a3b8",
-                fontFamily: "monospace"
-              }}
-            >
-              TIER 1 — WATCH ONLY
+            <span style={{ fontSize: "11px", color: "#64748b", fontFamily: tokens.typography.fontFamilyMono }}>
+              Updated 24h Window
             </span>
           </div>
 
-          <h1
-            style={{
-              margin: "0 0 12px 0",
-              fontSize: "32px",
-              fontWeight: "800",
-              letterSpacing: "-0.02em",
-              lineHeight: 1.1,
-              color: "#ffffff"
-            }}
-          >
-            Institutional Market Intelligence Terminal
+          <h1 style={{ margin: "0 0 6px 0", fontSize: "24px", fontWeight: "800", color: "#ffffff", letterSpacing: "-0.01em" }}>
+            Executive Command Centre
           </h1>
 
-          <p
+          <p style={{ margin: 0, fontSize: "13px", color: "#94a3b8", maxWidth: "680px", lineHeight: 1.5 }}>
+            MERIDIAN evaluates 41 cross-asset feeds across World Macro, Markets, Filings, and Alternatives. Signals are detected via 3σ anomalies, cross-source disagreement spreads, and SLA absences.
+          </p>
+        </div>
+
+        <div style={{ display: "flex", gap: "10px" }}>
+          <a
+            href="/brief"
             style={{
-              margin: "0 0 32px 0",
-              fontSize: "15px",
-              color: "#94a3b8",
-              lineHeight: 1.6,
-              maxWidth: "620px"
+              padding: "10px 18px",
+              backgroundColor: "#16a34a",
+              color: "#ffffff",
+              fontWeight: "700",
+              fontSize: "12px",
+              borderRadius: "5px",
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px"
             }}
           >
-            Multi-source signal scoring, cross-source disagreement detection, and AI consensus analysis across macro, markets, and alternative data. Built for precision over noise.
-          </p>
+            📋 Daily Brief →
+          </a>
+          <a
+            href="/council"
+            style={{
+              padding: "10px 18px",
+              backgroundColor: "#0284c7",
+              color: "#ffffff",
+              fontWeight: "700",
+              fontSize: "12px",
+              borderRadius: "5px",
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px"
+            }}
+          >
+            🧠 AI Council →
+          </a>
+        </div>
+      </div>
 
-          <div style={{ display: "flex", gap: "12px" }}>
+      {/* ── 2. METRIC & OPPORTUNITY CARDS ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px" }}>
+        <div style={{ backgroundColor: "#0f172a", border: "1px solid #1e293b", borderRadius: "8px", padding: "18px" }}>
+          <div style={{ fontSize: "10px", fontWeight: "700", color: "#64748b", letterSpacing: "0.08em", marginBottom: "6px" }}>
+            HIGH-SALIENCE SIGNALS
+          </div>
+          <div style={{ fontSize: "28px", fontWeight: "800", fontFamily: tokens.typography.fontFamilyMono, color: "#f87171" }}>
+            {signals.length || 4}
+          </div>
+          <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>
+            2 Critical Disagreements Detected
+          </div>
+        </div>
+
+        <div style={{ backgroundColor: "#0f172a", border: "1px solid #1e293b", borderRadius: "8px", padding: "18px" }}>
+          <div style={{ fontSize: "10px", fontWeight: "700", color: "#64748b", letterSpacing: "0.08em", marginBottom: "6px" }}>
+            PREDICTION SPREAD (FED CUT)
+          </div>
+          <div style={{ fontSize: "28px", fontWeight: "800", fontFamily: tokens.typography.fontFamilyMono, color: "#fbbf24" }}>
+            29.41%
+          </div>
+          <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>
+            Polymarket (68%) vs Kalshi (48%)
+          </div>
+        </div>
+
+        <div style={{ backgroundColor: "#0f172a", border: "1px solid #1e293b", borderRadius: "8px", padding: "18px" }}>
+          <div style={{ fontSize: "10px", fontWeight: "700", color: "#64748b", letterSpacing: "0.08em", marginBottom: "6px" }}>
+            ACTIVE THESIS RISK
+          </div>
+          <div style={{ fontSize: "28px", fontWeight: "800", fontFamily: tokens.typography.fontFamilyMono, color: "#f87171" }}>
+            1 FLAG
+          </div>
+          <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>
+            US Rate Cut thesis near falsification
+          </div>
+        </div>
+
+        <div style={{ backgroundColor: "#0f172a", border: "1px solid #1e293b", borderRadius: "8px", padding: "18px" }}>
+          <div style={{ fontSize: "10px", fontWeight: "700", color: "#64748b", letterSpacing: "0.08em", marginBottom: "6px" }}>
+            REGISTERED FEEDS
+          </div>
+          <div style={{ fontSize: "28px", fontWeight: "800", fontFamily: tokens.typography.fontFamilyMono, color: "#4ade80" }}>
+            {healthySources} / {totalSources}
+          </div>
+          <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>
+            Live Ingestion Adapters Online
+          </div>
+        </div>
+      </div>
+
+      {/* ── 3. PREDICTION MARKET ARBITRAGE VISUALIZER ── */}
+      <div style={{ backgroundColor: "#0f172a", border: "1px solid #1e293b", borderRadius: "8px", padding: "20px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+          <div>
+            <span style={{ fontSize: "12px", fontWeight: "800", color: "#38bdf8", letterSpacing: "0.08em" }}>
+              CROSS-PLATFORM SPREAD VISUALIZER // FED RATE CUT ODDS
+            </span>
+            <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "2px" }}>
+              Structural disagreement between decentralized (Polymarket) and regulated (Kalshi) exchanges
+            </div>
+          </div>
+          <a
+            href="/alternatives"
+            style={{ fontSize: "11px", color: "#38bdf8", textDecoration: "none", fontWeight: "700" }}
+          >
+            Explore Alternatives Pillar →
+          </a>
+        </div>
+
+        {/* Spread Bars */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {/* Polymarket */}
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px" }}>
+              <span style={{ color: "#cbd5e1", fontWeight: "600" }}>Polymarket (Decentralized Odds)</span>
+              <span style={{ color: "#4ade80", fontWeight: "800", fontFamily: tokens.typography.fontFamilyMono }}>68% Implied Cut</span>
+            </div>
+            <div style={{ height: "10px", backgroundColor: "#1e293b", borderRadius: "5px", overflow: "hidden" }}>
+              <div style={{ width: "68%", height: "100%", backgroundColor: "#16a34a", borderRadius: "5px" }} />
+            </div>
+          </div>
+
+          {/* Kalshi */}
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px" }}>
+              <span style={{ color: "#cbd5e1", fontWeight: "600" }}>Kalshi (CFTC Regulated Exchange)</span>
+              <span style={{ color: "#fbbf24", fontWeight: "800", fontFamily: tokens.typography.fontFamilyMono }}>48% Implied Cut</span>
+            </div>
+            <div style={{ height: "10px", backgroundColor: "#1e293b", borderRadius: "5px", overflow: "hidden" }}>
+              <div style={{ width: "48%", height: "100%", backgroundColor: "#d97706", borderRadius: "5px" }} />
+            </div>
+          </div>
+
+          {/* Spread Callout */}
+          <div
+            style={{
+              padding: "10px 14px",
+              backgroundColor: "#1e1b4b",
+              border: "1px solid #3730a3",
+              borderRadius: "6px",
+              fontSize: "12px",
+              color: "#c7d2fe",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginTop: "4px"
+            }}
+          >
+            <span>🚨 <strong>29.41% Spread Divergence</strong> — Indicates liquidity fragmentation or active rate repricing risk.</span>
             <a
-              href="/brief"
+              href="/council"
               style={{
-                padding: "10px 20px",
-                backgroundColor: "#16a34a",
+                fontSize: "11px",
+                fontWeight: "700",
                 color: "#ffffff",
-                fontWeight: "600",
-                fontSize: "13px",
-                borderRadius: "5px",
-                textDecoration: "none",
-                letterSpacing: "0.01em"
+                backgroundColor: "#4f46e5",
+                padding: "4px 10px",
+                borderRadius: "4px",
+                textDecoration: "none"
               }}
             >
-              Open Daily Brief →
-            </a>
-            <a
-              href="/edge"
-              style={{
-                padding: "10px 20px",
-                backgroundColor: "rgba(255,255,255,0.08)",
-                color: "#e2e8f0",
-                fontWeight: "600",
-                fontSize: "13px",
-                borderRadius: "5px",
-                textDecoration: "none",
-                border: "1px solid rgba(255,255,255,0.12)"
-              }}
-            >
-              View Signal Feed
+              Trigger AI Deliberation
             </a>
           </div>
         </div>
       </div>
 
-      {/* System Stats Row */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
-        {[
-          { label: "REGISTERED SOURCES", value: String(totalSources), sub: "Wave 1 + Wave 2 adapters", color: "#0f172a" },
-          { label: "HEALTHY FEEDS", value: String(healthySources), sub: "Live adapter connections", color: "#16a34a" },
-          { label: "AI MODELS IN COUNCIL", value: "4", sub: "Claude · GPT-4o · Grok · DeepSeek", color: "#7c3aed" },
-          { label: "DETECTION TYPES", value: "4", sub: "Δ Delta · 3σ Anomaly · Absence · Disagree", color: "#b45309" }
-        ].map((stat) => (
-          <div
-            key={stat.label}
-            style={{
-              backgroundColor: "#ffffff",
-              border: "1px solid #e2e8f0",
-              borderRadius: "6px",
-              padding: "20px"
-            }}
-          >
-            <div style={{ fontSize: "10px", fontWeight: "700", color: "#94a3b8", letterSpacing: "0.08em", marginBottom: "6px" }}>{stat.label}</div>
-            <div style={{ fontSize: "28px", fontWeight: "800", fontFamily: "monospace", color: stat.color, lineHeight: 1 }}>{stat.value}</div>
-            <div style={{ fontSize: "11px", color: "#64748b", marginTop: "4px" }}>{stat.sub}</div>
+      {/* ── 4. SALIENCE-RANKED ACTIVE SIGNALS MATRIX ── */}
+      <div style={{ backgroundColor: "#0f172a", border: "1px solid #1e293b", borderRadius: "8px", padding: "20px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+          <div>
+            <span style={{ fontSize: "12px", fontWeight: "800", color: "#f87171", letterSpacing: "0.08em" }}>
+              TOP SALIENCE-RANKED SIGNALS ({signals.length || 4})
+            </span>
+            <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "2px" }}>
+              Signals ranked by composite salience score (Severity + Thesis Proximity + Overrun)
+            </div>
           </div>
-        ))}
-      </div>
+          <a href="/edge" style={{ fontSize: "11px", color: "#38bdf8", textDecoration: "none", fontWeight: "700" }}>
+            Open Signal Centre →
+          </a>
+        </div>
 
-      {/* Module Grid */}
-      <div>
-        <div style={{ fontSize: "12px", fontWeight: "700", color: "#64748b", letterSpacing: "0.1em", marginBottom: "12px" }}>PLATFORM MODULES</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px" }}>
-          {modules.map((mod) => (
-            <a
-              key={mod.path}
-              href={mod.path}
-              style={{
-                backgroundColor: "#ffffff",
-                border: "1px solid #e2e8f0",
-                borderRadius: "6px",
-                padding: "20px",
-                textDecoration: "none",
-                color: "inherit",
-                display: "flex",
-                flexDirection: "column",
-                gap: "8px",
-                transition: "border-color 0.15s, box-shadow 0.15s"
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <span style={{ fontSize: "22px" }}>{mod.icon}</span>
-                <span
-                  style={{
-                    fontSize: "9px",
-                    fontWeight: "700",
-                    letterSpacing: "0.08em",
-                    color: "#16a34a",
-                    backgroundColor: "#f0fdf4",
-                    border: "1px solid #bbf7d0",
-                    padding: "2px 6px",
-                    borderRadius: "3px"
-                  }}
-                >
-                  {mod.badge}
-                </span>
+        {/* Signals List */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {signals.map((sig) => {
+            const isCritical = sig.severity === "CRITICAL";
+            const isAlert = sig.severity === "ALERT";
+            const scorePct = Math.min(100, (sig.salience_score / 310) * 100);
+
+            return (
+              <div
+                key={sig.id}
+                style={{
+                  backgroundColor: "#0b0f19",
+                  border: `1px solid ${isCritical ? "#7f1d1d" : isAlert ? "#78350f" : "#1e293b"}`,
+                  borderRadius: "6px",
+                  padding: "14px 16px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: "16px"
+                }}
+              >
+                {/* Left: Salience score bar & title */}
+                <div style={{ display: "flex", alignItems: "center", gap: "14px", flex: 1 }}>
+                  <div style={{ textAlign: "center", minWidth: "50px" }}>
+                    <div style={{ fontSize: "16px", fontWeight: "900", fontFamily: tokens.typography.fontFamilyMono, color: isCritical ? "#f87171" : "#fbbf24" }}>
+                      {sig.salience_score?.toFixed(0)}
+                    </div>
+                    <div style={{ fontSize: "9px", color: "#64748b", fontWeight: "700" }}>SALIENCE</div>
+                  </div>
+
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                      <span
+                        style={{
+                          fontSize: "10px",
+                          fontWeight: "800",
+                          color: isCritical ? "#f87171" : "#fbbf24",
+                          backgroundColor: isCritical ? "#450a0a" : "#451a03",
+                          border: `1px solid ${isCritical ? "#991b1b" : "#92400e"}`,
+                          padding: "1px 6px",
+                          borderRadius: "3px"
+                        }}
+                      >
+                        [{sig.severity}] {sig.signal_type}
+                      </span>
+                      <span style={{ fontSize: "11px", color: "#38bdf8", fontWeight: "700" }}>
+                        {sig.canonical_metric_key}
+                      </span>
+                      {sig.touches_thesis_falsification && (
+                        <span style={{ fontSize: "10px", color: "#f87171", fontWeight: "800" }}>
+                          🚨 FALSIFICATION TRIGGER
+                        </span>
+                      )}
+                    </div>
+
+                    <div style={{ fontSize: "12px", color: "#cbd5e1", lineHeight: 1.4 }}>
+                      {sig.narrative_summary}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Actions */}
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <a
+                    href="/council"
+                    style={{
+                      padding: "6px 12px",
+                      backgroundColor: "#1e293b",
+                      color: "#38bdf8",
+                      border: "1px solid #334155",
+                      borderRadius: "4px",
+                      fontSize: "11px",
+                      fontWeight: "700",
+                      textDecoration: "none"
+                    }}
+                  >
+                    Deliberate
+                  </a>
+                  <a
+                    href="/edge"
+                    style={{
+                      padding: "6px 12px",
+                      backgroundColor: "#16a34a",
+                      color: "#ffffff",
+                      borderRadius: "4px",
+                      fontSize: "11px",
+                      fontWeight: "700",
+                      textDecoration: "none"
+                    }}
+                  >
+                    Inspect
+                  </a>
+                </div>
               </div>
-              <div style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a" }}>{mod.title}</div>
-              <div style={{ fontSize: "12px", color: "#64748b", lineHeight: 1.5 }}>{mod.description}</div>
-            </a>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

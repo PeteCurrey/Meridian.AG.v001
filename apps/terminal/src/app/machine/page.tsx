@@ -1,231 +1,207 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { tokens, Panel, DataTable, Column, StateBanner } from "@meridian/ui";
+import { tokens } from "@meridian/ui";
+
+const TIERS = [
+  { id: "TIER_1_WATCH", label: "TIER 1 // WATCH", description: "Monitor only. No automated execution.", color: "#4ade80" },
+  { id: "TIER_2_ALERT", label: "TIER 2 // ALERT", description: "Notify operator on signal. No auto-action.", color: "#fbbf24" },
+  { id: "TIER_3_EXECUTE", label: "TIER 3 // EXECUTE", description: "Automated signal-triggered actions enabled.", color: "#f87171" }
+];
 
 export default function MachinePage() {
   const [machineData, setMachineData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [toggling, setToggling] = useState(false);
 
-  const fetchMachineStatus = async () => {
+  const fetchMachine = async () => {
     try {
       setLoading(true);
       const res = await fetch("/api/machine");
-      if (res.ok) {
-        const data = await res.json();
-        setMachineData(data);
-      }
-    } catch (e) {
-      console.error("Failed to fetch machine status:", e);
-    } finally {
-      setLoading(false);
-    }
+      if (res.ok) setMachineData(await res.json());
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
   };
 
-  useEffect(() => {
-    fetchMachineStatus();
-  }, []);
+  useEffect(() => { fetchMachine(); }, []);
 
-  const handleToggleKillSwitch = async () => {
+  const toggleKillSwitch = async () => {
+    if (!machineData) return;
     try {
-      const nextState = !machineData?.kill_switch_active;
+      setToggling(true);
       const res = await fetch("/api/machine", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kill_switch_active: nextState })
+        body: JSON.stringify({ kill_switch_active: !machineData.kill_switch_active })
       });
-      if (res.ok) {
-        fetchMachineStatus();
-      }
-    } catch (e) {
-      console.error("Kill switch toggle error:", e);
-    }
+      if (res.ok) fetchMachine();
+    } catch (e) { console.error(e); }
+    finally { setToggling(false); }
   };
 
-  const cronColumns: Column<any>[] = [
-    {
-      key: "job_name",
-      header: "JOB NAME",
-      render: (row) => <span style={{ fontWeight: tokens.typography.fontWeightBold, color: tokens.colors.textPrimary }}>{row.job_name}</span>
-    },
-    {
-      key: "cron",
-      header: "CRON EXPRESSION",
-      render: (row) => <span style={{ fontFamily: tokens.typography.fontFamilyMono, color: tokens.colors.accentGreen }}>{row.cron_expression}</span>
-    },
-    {
-      key: "cadence",
-      header: "CADENCE",
-      render: (row) => <span style={{ fontSize: tokens.typography.fontSizeXs }}>{row.cadence}</span>
-    },
-    {
-      key: "status",
-      header: "STATUS",
-      render: (row) => {
-        const isHalted = row.status === "HALTED";
-        return (
-          <span
-            style={{
-              fontSize: tokens.typography.fontSizeXs,
-              fontWeight: tokens.typography.fontWeightBold,
-              color: isHalted ? "#dc2626" : "#16a34a",
-              backgroundColor: isHalted ? "#fef2f2" : "#f0fdf4",
-              border: `1px solid ${isHalted ? "#fecaca" : "#bbf7d0"}`,
-              padding: "2px 8px",
-              borderRadius: "4px"
-            }}
-          >
-            {row.status}
-          </span>
-        );
-      }
-    }
-  ];
+  const setTier = async (tier: string) => {
+    try {
+      const res = await fetch("/api/machine", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tier })
+      });
+      if (res.ok) fetchMachine();
+    } catch (e) { console.error(e); }
+  };
 
-  const logColumns: Column<any>[] = [
-    {
-      key: "timestamp",
-      header: "TIMESTAMP",
-      render: (row) => <span style={{ fontFamily: tokens.typography.fontFamilyMono, fontSize: tokens.typography.fontSizeXs }}>{row.timestamp}</span>
-    },
-    {
-      key: "job_name",
-      header: "JOB NAME",
-      render: (row) => <span style={{ fontWeight: tokens.typography.fontWeightMedium }}>{row.job_name}</span>
-    },
-    {
-      key: "status",
-      header: "STATUS",
-      render: (row) => {
-        let color = "#16a34a";
-        let bg = "#f0fdf4";
-        let border = "#bbf7d0";
-
-        if (row.status === "REJECTED_KILL_SWITCH") {
-          color = "#dc2626";
-          bg = "#fef2f2";
-          border = "#fecaca";
-        }
-
-        return (
-          <span style={{ fontSize: tokens.typography.fontSizeXs, fontWeight: tokens.typography.fontWeightBold, color, backgroundColor: bg, border: `1px solid ${border}`, padding: "2px 8px", borderRadius: "4px" }}>
-            {row.status}
-          </span>
-        );
-      }
-    },
-    {
-      key: "duration",
-      header: "DURATION",
-      render: (row) => <span style={{ fontFamily: tokens.typography.fontFamilyMono }}>{row.duration_ms}ms</span>
-    },
-    {
-      key: "rows",
-      header: "ROWS PROCESSED",
-      render: (row) => <span style={{ fontFamily: tokens.typography.fontFamilyMono }}>{row.rows_processed}</span>
-    }
-  ];
+  const isKilled = machineData?.kill_switch_active;
+  const currentTier = machineData?.current_tier || "TIER_1_WATCH";
 
   return (
-    <div
-      style={{
-        backgroundColor: "transparent",
-        color: tokens.colors.textPrimary,
-        fontFamily: tokens.typography.fontFamilySans,
-        minHeight: "100%",
-        display: "flex",
-        flexDirection: "column",
-        gap: tokens.spacing.lg
-      }}
-    >
-      {/* Header & Kill Switch Toggle */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <div>
-          <h1 style={{ margin: 0, fontSize: tokens.typography.fontSizeXl, color: tokens.colors.textPrimary, fontWeight: tokens.typography.fontWeightBold }}>
-            Machine Control Room
-          </h1>
-          <p style={{ margin: "4px 0 0 0", color: tokens.colors.textMuted, fontSize: tokens.typography.fontSizeSm }}>
-            Background automation schedules, execution tier management, and emergency kill switch controls.
-          </p>
+    <div style={{ backgroundColor: "transparent", color: "#f8fafc", fontFamily: tokens.typography.fontFamilySans, minHeight: "100%", display: "flex", flexDirection: "column", gap: "24px" }}>
+      {/* Header */}
+      <div>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+          <span style={{ fontSize: "10px", fontWeight: "800", color: "#f87171", backgroundColor: "#7f1d1d20", border: "1px solid #7f1d1d40", padding: "2px 8px", borderRadius: "4px" }}>
+            AUTOMATION CONTROL
+          </span>
+          <span style={{ fontSize: "11px", color: "#64748b", fontFamily: tokens.typography.fontFamilyMono }}>Immutable Audit Log · Kill Switch · Tier Selector</span>
         </div>
-
-        <button
-          onClick={handleToggleKillSwitch}
-          style={{
-            padding: "10px 20px",
-            backgroundColor: machineData?.kill_switch_active ? "#dc2626" : "#16a34a",
-            color: "#ffffff",
-            fontWeight: tokens.typography.fontWeightBold,
-            fontSize: tokens.typography.fontSizeSm,
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer"
-          }}
-        >
-          {machineData?.kill_switch_active ? "🚨 KILL SWITCH ACTIVE (CLICK TO RESUME)" : "🛡️ KILL SWITCH READY (CLICK TO HALT)"}
-        </button>
+        <h1 style={{ margin: 0, fontSize: "24px", fontWeight: "800", color: "#ffffff" }}>Machine Room // Automation Control</h1>
+        <p style={{ margin: "4px 0 0 0", color: "#94a3b8", fontSize: "13px" }}>
+          Manage automation tier, emergency kill switch, scheduled ingestion passes, and immutable job audit log.
+        </p>
       </div>
 
-      {machineData?.kill_switch_active && (
-        <StateBanner
-          state="FEED_OFFLINE"
-          reason="EMERGENCY KILL SWITCH ACTIVE: All background automation jobs and scheduled triggers are HALTED."
-        />
-      )}
+      {/* Kill Switch + Tier Grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+        {/* Kill Switch Card */}
+        <div
+          style={{
+            backgroundColor: "#0f172a",
+            border: `1px solid ${isKilled ? "#991b1b" : "#1e293b"}`,
+            borderRadius: "8px",
+            padding: "24px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "16px"
+          }}
+        >
+          <div style={{ fontSize: "12px", fontWeight: "800", color: isKilled ? "#f87171" : "#64748b", letterSpacing: "0.08em" }}>
+            GLOBAL EMERGENCY KILL SWITCH
+          </div>
 
-      {/* Tier Control Panel */}
-      <Panel title="AUTOMATION EXECUTION TIER CONTROL">
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div>
-            <div style={{ fontSize: tokens.typography.fontSizeSm, fontWeight: tokens.typography.fontWeightBold, color: tokens.colors.accentGreen }}>
-              CURRENT TIER: TIER 1 (WATCH ONLY)
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <div
+              style={{
+                width: "60px", height: "60px", borderRadius: "50%",
+                backgroundColor: isKilled ? "#7f1d1d" : "#14532d",
+                border: `3px solid ${isKilled ? "#ef4444" : "#16a34a"}`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "22px"
+              }}
+            >
+              {isKilled ? "🛑" : "✅"}
             </div>
-            <div style={{ fontSize: tokens.typography.fontSizeXs, color: tokens.colors.textMuted, marginTop: "2px" }}>
-              Ingestion, entity resolution, edge detection, and brief generation run automatically. Zero execution actions permitted.
+            <div>
+              <div style={{ fontSize: "18px", fontWeight: "900", color: isKilled ? "#f87171" : "#4ade80" }}>
+                {isKilled ? "KILL SWITCH ACTIVE" : "ENGINE RUNNING"}
+              </div>
+              <div style={{ fontSize: "12px", color: "#64748b", marginTop: "2px" }}>
+                {isKilled ? "All automation halted. Manual operator override required." : "All cron passes executing normally."}
+              </div>
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: "6px" }}>
-            {["TIER 0 (MANUAL)", "TIER 1 (WATCH)", "TIER 2 (ASSISTED) [LOCKED]"].map((tier, idx) => (
+          <button
+            onClick={toggleKillSwitch}
+            disabled={toggling || loading}
+            style={{
+              padding: "12px 20px",
+              backgroundColor: isKilled ? "#16a34a" : "#dc2626",
+              color: "#ffffff",
+              fontWeight: "800",
+              fontSize: "13px",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer",
+              letterSpacing: "0.04em"
+            }}
+          >
+            {toggling ? "Updating..." : isKilled ? "🟢 RESTORE AUTOMATION" : "🛑 ENGAGE KILL SWITCH"}
+          </button>
+        </div>
+
+        {/* Tier Selector */}
+        <div style={{ backgroundColor: "#0f172a", border: "1px solid #1e293b", borderRadius: "8px", padding: "24px", display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div style={{ fontSize: "12px", fontWeight: "800", color: "#64748b", letterSpacing: "0.08em" }}>AUTOMATION TIER SELECTOR</div>
+          {TIERS.map((tier) => {
+            const isActive = currentTier === tier.id;
+            return (
               <button
-                key={tier}
-                disabled={idx >= 2}
+                key={tier.id}
+                onClick={() => setTier(tier.id)}
                 style={{
-                  padding: "6px 12px",
-                  borderRadius: "4px",
-                  fontSize: tokens.typography.fontSizeXs,
-                  backgroundColor: idx === 1 ? tokens.colors.accentGreen : tokens.colors.panelBg,
-                  color: idx === 1 ? "#ffffff" : tokens.colors.textMuted,
-                  border: `1px solid ${tokens.colors.borderHairline}`,
-                  cursor: idx >= 2 ? "not-allowed" : "pointer"
+                  padding: "12px 16px",
+                  backgroundColor: isActive ? "#1e293b" : "#090d16",
+                  border: `1px solid ${isActive ? tier.color : "#334155"}`,
+                  borderLeft: `4px solid ${isActive ? tier.color : "#334155"}`,
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center"
                 }}
               >
-                {tier}
+                <div>
+                  <div style={{ fontSize: "12px", fontWeight: "800", color: isActive ? tier.color : "#94a3b8" }}>{tier.label}</div>
+                  <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px" }}>{tier.description}</div>
+                </div>
+                {isActive && <span style={{ fontSize: "10px", fontWeight: "800", color: tier.color, backgroundColor: `${tier.color}20`, padding: "3px 8px", borderRadius: "4px" }}>ACTIVE</span>}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
-      </Panel>
+      </div>
 
-      {/* Active Cron Schedules */}
-      <Panel title="ACTIVE BACKGROUND CRON SCHEDULES">
-        <DataTable
-          data={machineData?.schedules || []}
-          columns={cronColumns}
-          keyExtractor={(row) => row.id}
-          emptyMessage="No schedules."
-        />
-      </Panel>
+      {/* Cron Schedules */}
+      <div style={{ backgroundColor: "#0f172a", border: "1px solid #1e293b", borderRadius: "8px", padding: "20px" }}>
+        <div style={{ fontSize: "12px", fontWeight: "800", color: "#38bdf8", letterSpacing: "0.08em", marginBottom: "14px" }}>
+          SCHEDULED INGESTION PASSES
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          {(machineData?.schedules || []).map((s: any) => (
+            <div key={s.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", backgroundColor: "#090d16", border: "1px solid #1e293b", borderRadius: "6px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: isKilled ? "#ef4444" : "#4ade80", display: "inline-block", flexShrink: 0 }} />
+                <span style={{ fontSize: "12px", fontWeight: "800", color: "#38bdf8", fontFamily: tokens.typography.fontFamilyMono }}>{s.job_name}</span>
+                <span style={{ fontSize: "10px", color: "#64748b", backgroundColor: "#1e293b", padding: "2px 6px", borderRadius: "3px" }}>{s.cron_expression}</span>
+              </div>
+              <div style={{ display: "flex", gap: "12px", fontSize: "11px" }}>
+                <span style={{ color: "#64748b" }}>Cadence: <strong style={{ color: "#cbd5e1" }}>{s.cadence}</strong></span>
+                <span style={{ color: isKilled ? "#f87171" : "#4ade80", fontWeight: "700" }}>{isKilled ? "HALTED" : "ACTIVE"}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
-      {/* Immutable Job Audit Log */}
-      <Panel title="IMMUTABLE JOB AUDIT LOG">
-        <DataTable
-          data={machineData?.audit_logs || []}
-          columns={logColumns}
-          keyExtractor={(row) => row.id}
-          emptyMessage="No audit logs."
-        />
-      </Panel>
+      {/* Audit Log */}
+      <div style={{ backgroundColor: "#0f172a", border: "1px solid #1e293b", borderRadius: "8px", padding: "20px" }}>
+        <div style={{ fontSize: "12px", fontWeight: "800", color: "#64748b", letterSpacing: "0.08em", marginBottom: "14px" }}>
+          IMMUTABLE JOB AUDIT LOG (LAST 20)
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+          {(machineData?.audit_logs || []).map((log: any) => (
+            <div key={log.id} style={{ display: "grid", gridTemplateColumns: "180px 160px 120px 1fr auto", gap: "12px", alignItems: "center", padding: "10px 14px", backgroundColor: "#090d16", border: "1px solid #1e293b", borderRadius: "5px", fontSize: "11px", fontFamily: tokens.typography.fontFamilyMono }}>
+              <span style={{ color: "#94a3b8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {new Date(log.timestamp).toLocaleTimeString("en-GB")}
+              </span>
+              <span style={{ color: "#38bdf8", fontWeight: "700", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{log.job_name}</span>
+              <span style={{ color: "#64748b" }}>{log.trigger_type}</span>
+              <span style={{ color: log.status === "SUCCESS" ? "#4ade80" : log.status?.includes("KILL") ? "#f87171" : "#fbbf24", fontWeight: "700" }}>{log.status}</span>
+              <span style={{ color: "#475569" }}>{log.duration_ms}ms</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
