@@ -46,15 +46,30 @@ importers:
 
   apps/terminal:
     dependencies:
+      '@meridian/brief':
+        specifier: workspace:*
+        version: link:../../packages/brief
       '@meridian/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@meridian/council':
+        specifier: workspace:*
+        version: link:../../packages/council
+      '@meridian/edge':
+        specifier: workspace:*
+        version: link:../../packages/edge
       '@meridian/engine':
         specifier: workspace:*
         version: link:../engine
+      '@meridian/llm':
+        specifier: workspace:*
+        version: link:../../packages/llm
       '@meridian/registry':
         specifier: workspace:*
         version: link:../../packages/registry
+      '@meridian/resolve':
+        specifier: workspace:*
+        version: link:../../packages/resolve
       '@meridian/ui':
         specifier: workspace:*
         version: link:../../packages/ui
