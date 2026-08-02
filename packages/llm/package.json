@@ -1,16 +1,15 @@
 {
-  "name": "@meridian/brief",
+  "name": "@meridian/llm",
   "version": "0.1.0",
   "private": true,
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
-    "build": "echo '@meridian/brief build ok'",
+    "build": "echo '@meridian/llm build ok'",
     "test": "node --test"
   },
   "dependencies": {
-    "@meridian/core": "workspace:*",
-    "@meridian/llm": "workspace:*"
+    "@meridian/core": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.7.0"
