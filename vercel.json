@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "buildCommand": "pnpm --filter @meridian/terminal... build",
-  "outputDirectory": "apps/terminal/.next"
+  "buildCommand": "cd ../.. && pnpm --filter @meridian/terminal... build",
+  "outputDirectory": ".next"
 }
