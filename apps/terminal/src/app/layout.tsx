@@ -1,5 +1,5 @@
 import React from "react";
-import { TerminalShell } from "../components/TerminalShell";
+import { ShellWrapper } from "../components/ShellWrapper";
 
 export const metadata = {
   title: "MERIDIAN Terminal",
@@ -13,8 +13,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, padding: 0, backgroundColor: "#0a0a0c" }}>
-        <TerminalShell activePath="/health">{children}</TerminalShell>
+      <body style={{ margin: 0, padding: 0, backgroundColor: "#f8fafc" }}>
+        <ShellWrapper>{children}</ShellWrapper>
       </body>
     </html>
   );
