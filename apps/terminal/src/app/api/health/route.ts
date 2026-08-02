@@ -45,7 +45,7 @@ export async function GET() {
       name: source.name,
       pillar: source.pillar,
       cadence: source.cadence,
-      staleness_sla_seconds: source.staleness_sla_seconds,
+      staleness_sla_seconds: source.sla_seconds,
       status: status,
       last_successful_fetch: health?.last_successful_fetch || null,
       error_rate_24h: health?.error_rate_24h || 0.0,

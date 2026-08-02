@@ -15,7 +15,14 @@
     "build": "echo '@meridian/ui build ok'",
     "test": "node --test"
   },
+  "dependencies": {
+    "@meridian/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
   "devDependencies": {
+    "@types/react": "^19.0.0",
     "typescript": "^5.7.0"
   }
 }

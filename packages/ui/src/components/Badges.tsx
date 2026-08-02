@@ -31,7 +31,7 @@ export interface StalenessBadgeProps {
 }
 
 export const StalenessBadge: React.FC<StalenessBadgeProps> = ({ status, slaSeconds }) => {
-  let color = tokens.colors.accentGreen;
+  let color: string = tokens.colors.accentGreen;
   if (status === "DEGRADED") color = tokens.colors.warningAmber;
   if (status === "OFFLINE") color = tokens.colors.offlineRed;
   if (status === "NOT_CONNECTED") color = tokens.colors.notConnectedGray;
@@ -79,7 +79,7 @@ export interface StateBannerProps {
 }
 
 export const StateBanner: React.FC<StateBannerProps> = ({ state, reason }) => {
-  let color = tokens.colors.warningAmber;
+  let color: string = tokens.colors.warningAmber;
   if (state === "FEED_OFFLINE") color = tokens.colors.offlineRed;
   if (state === "NOT_CONNECTED") color = tokens.colors.notConnectedGray;
 

@@ -151,7 +151,7 @@ export default function MachinePage() {
       key: "status",
       header: "STATUS",
       render: (row) => {
-        let color = tokens.colors.accentGreen;
+        let color: string = tokens.colors.accentGreen;
         if (row.status === "FAILED") color = tokens.colors.warningAmber;
         if (row.status === "REJECTED_KILL_SWITCH") color = tokens.colors.offlineRed;
 

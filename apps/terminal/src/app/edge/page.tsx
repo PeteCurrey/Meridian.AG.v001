@@ -92,7 +92,7 @@ export default function EdgePage() {
       header: "SEVERITY",
       sortable: true,
       render: (row) => {
-        let color = tokens.colors.accentGreen;
+        let color: string = tokens.colors.accentGreen;
         if (row.severity === "ALERT") color = tokens.colors.warningAmber;
         if (row.severity === "CRITICAL") color = tokens.colors.offlineRed;
 

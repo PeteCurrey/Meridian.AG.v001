@@ -121,7 +121,7 @@ export class AdapterRunner {
     // Execute Fetch -> Raw payload stored BEFORE parsing
     const config: AdapterConfig = {
       source_id: sourceId,
-      api_key: apiKey,
+      ...(apiKey ? { api_key: apiKey } : {}),
       base_url: entry.base_url ?? ""
     };
 
